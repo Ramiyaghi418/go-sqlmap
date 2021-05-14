@@ -26,8 +26,13 @@ func main() {
 	pos := core.GetUnionSelectPos(suffix, cleanUrl, key)
 	core.GetVersion(pos, suffix, cleanUrl, key)
 	core.GetDatabase(pos, suffix, cleanUrl, key)
-	core.GetAllTables(pos, suffix, cleanUrl, key)
-	core.GetColumns(pos, suffix, cleanUrl, key, "users")
-	core.GetData(pos, suffix, cleanUrl, key, "users", []string{"id", "username", "password"})
-
+	if params.Database != "" {
+		core.GetAllTables(pos, suffix, cleanUrl, key)
+	}
+	if params.Table != "" {
+		core.GetColumns(pos, suffix, cleanUrl, key, params.Table)
+	}
+	if len(params.Columns) > 0 {
+		core.GetData(pos, suffix, cleanUrl, key, params.Table, params.Columns)
+	}
 }
