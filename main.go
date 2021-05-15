@@ -1,9 +1,11 @@
 package main
 
 import (
+	"go-sqlmap/constant"
 	"go-sqlmap/core"
 	"go-sqlmap/log"
 	"go-sqlmap/util"
+	"os"
 )
 
 const (
@@ -17,9 +19,17 @@ func main() {
 	params := core.ParseInput()
 	target := util.CheckUrl(params.Url)
 	log.Info("target is " + target)
-	core.DetectAlive(target)
-	core.DetectWaf(target)
-	core.DetectSqlInject(target)
+
+	if !core.DetectAlive(target) {
+		os.Exit(-1)
+	}
+
+	if core.DetectSafeDogWaf(target) {
+		os.Exit(-1)
+	}
+
+	// Error Based Injection
+	core.DetectErrorBasedSqlInject(target, constant.DefaultMethod)
 	suffix := core.GetSuffix(params.Url)
 	key := core.GetOrderByNum(suffix, target)
 	cleanUrl := util.GetCleanUrl(target)
