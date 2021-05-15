@@ -1,12 +1,15 @@
 package main
 
 import (
+	"fmt"
 	"go-sqlmap/constant"
 	"go-sqlmap/core"
 	"go-sqlmap/log"
 	"go-sqlmap/start"
 	"go-sqlmap/util"
 	"os"
+	"os/signal"
+	"syscall"
 )
 
 func main() {
@@ -24,5 +27,20 @@ func main() {
 	}
 
 	// Error Based Injection
-	start.RunErrorBased(target, params)
+	go start.RunErrorBased(target, params)
+
+	exit()
+}
+
+func exit() {
+	sign := make(chan os.Signal, 1)
+	done := make(chan bool, 1)
+	signal.Notify(sign, syscall.SIGINT, syscall.SIGTERM)
+	go func() {
+		sig := <-sign
+		fmt.Println()
+		fmt.Println(sig)
+		done <- true
+	}()
+	<-done
 }

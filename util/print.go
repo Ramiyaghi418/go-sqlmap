@@ -65,5 +65,5 @@ func PrintData(columns []interface{}, data [][]interface{}) {
 			fmt.Print("-----------")
 		}
 	}
-	fmt.Print("|")
+	fmt.Print("|\n")
 }
