@@ -1,7 +1,8 @@
-package core
+package start
 
 import (
 	"go-sqlmap/constant"
+	"go-sqlmap/log"
 	"go-sqlmap/util"
 	"strings"
 )
@@ -13,6 +14,7 @@ func DetectSafeDogWaf(url string) bool {
 		if strings.Contains(string(body), constant.SafeDogKeyword) {
 			if strings.Contains(headers[constant.SafeDogHeaderKey],
 				constant.SafeDogHeaderKeyword) {
+				log.Error("there is a waf!")
 				return true
 			}
 		}

@@ -6,13 +6,19 @@ import (
 	"go-sqlmap/util"
 )
 
-func RunErrorBased(target string, params core.Input) bool {
-	core.DetectErrorBasedSqlInject(target, constant.DefaultMethod)
+func RunUnionSelect(target string, params Input) bool {
+	success, _ := core.DetectUnionSelectSqlInject(target, constant.DefaultMethod)
+	if !success {
+		return false
+	}
 	success, suffix := core.GetSuffix(params.Url)
 	if !success {
 		return false
 	}
 	key := core.GetOrderByNum(suffix, target)
+	if key == 0 {
+		return false
+	}
 	cleanUrl := util.GetCleanUrl(target)
 	pos := core.GetUnionSelectPos(suffix, cleanUrl, key)
 	core.GetVersion(pos, suffix, cleanUrl, key)
@@ -27,5 +33,17 @@ func RunErrorBased(target string, params core.Input) bool {
 	if params.Database != "" && params.Table != "" && len(params.Columns) > 0 {
 		core.GetData(pos, suffix, cleanUrl, key, params.Database, params.Table, params.Columns)
 	}
+	return true
+}
+
+func RunErrorBased(target string, params Input) bool {
+	return true
+}
+
+func RunBoolBlind(target string, params Input) bool {
+	return true
+}
+
+func RunTimeBlind(target string, params Input) bool {
 	return true
 }

@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"go-sqlmap/constant"
-	"go-sqlmap/core"
 	"go-sqlmap/log"
 	"go-sqlmap/start"
 	"go-sqlmap/util"
@@ -13,26 +12,25 @@ import (
 )
 
 func main() {
-	core.PrintLogo(constant.Version, constant.Author, constant.Url)
-	params := core.ParseInput()
+	start.PrintLogo(constant.Version, constant.Author, constant.Url)
+	params := start.ParseInput()
 	target := util.CheckUrl(params.Url)
 	log.Info("target is " + target)
 
-	if !core.DetectAlive(target) {
+	if !start.DetectAlive(target) {
 		os.Exit(-1)
 	}
 
-	if core.DetectSafeDogWaf(target) {
+	if start.DetectSafeDogWaf(target) {
 		os.Exit(-1)
 	}
 
-	// Error Based Injection
-	go start.RunErrorBased(target, params)
+	start.NewStarter(target, params)
 
-	exit()
+	wait()
 }
 
-func exit() {
+func wait() {
 	sign := make(chan os.Signal, 1)
 	done := make(chan bool, 1)
 	signal.Notify(sign, syscall.SIGINT, syscall.SIGTERM)
