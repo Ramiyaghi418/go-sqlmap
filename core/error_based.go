@@ -229,7 +229,7 @@ func GetData(pos Pos, suffix string, url string, key int, database string, table
 		innerR := []rune(body)
 		innerRes := string(innerR[pos.StartIndex:])
 		result := strings.Split(innerRes, "<")[0]
-		log.Info("Get Data Success")
+		log.Info("get data success")
 		var output [][]string
 		for _, v := range strings.Split(result, ",") {
 			var temp []string

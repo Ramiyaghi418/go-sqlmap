@@ -38,31 +38,35 @@ func PrintData(columns []interface{}, data [][]interface{}) {
 	fmt.Print("|")
 	for i := 0; i < len(columns); i++ {
 		if i == 0 {
-			fmt.Print("----------")
+			fmt.Print("---------------")
 		} else {
-			fmt.Print("-----------")
+			fmt.Print("----------------")
 		}
 	}
 	fmt.Print("|\n")
-	fmt.Printf("|%-10s|%-10s|%-10s|\n", columns...)
+	formatStr := "|"
+	for i := 0; i < len(columns); i++ {
+		formatStr += "%-15s|"
+	}
+	fmt.Printf(formatStr+"\n", columns...)
 	fmt.Print("|")
 	for i := 0; i < len(columns); i++ {
 		if i == 0 {
-			fmt.Print("----------")
+			fmt.Print("---------------")
 		} else {
-			fmt.Print("-----------")
+			fmt.Print("----------------")
 		}
 	}
 	fmt.Print("|\n")
 	for _, v := range data {
-		fmt.Printf("|%-10s|%-10s|%-10s|\n", v...)
+		fmt.Printf(formatStr+"\n", v...)
 	}
 	fmt.Print("|")
 	for i := 0; i < len(columns); i++ {
 		if i == 0 {
-			fmt.Print("----------")
+			fmt.Print("---------------")
 		} else {
-			fmt.Print("-----------")
+			fmt.Print("----------------")
 		}
 	}
 	fmt.Print("|\n")
