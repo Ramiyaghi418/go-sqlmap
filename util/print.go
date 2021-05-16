@@ -4,34 +4,38 @@ import (
 	"fmt"
 )
 
-func PrintDatabases(databases []interface{}) {
+const (
+	Databases = 1
+	Tables    = 2
+	Columns   = 3
+)
+
+func printFunc(printType int, data []interface{}) {
 	fmt.Println("|------------------------------|")
-	fmt.Printf("|%-30s|\n", "All Databases")
+	if printType == Databases {
+		fmt.Printf("|%-30s|\n", "All Databases")
+	} else if printType == Tables {
+		fmt.Printf("|%-30s|\n", "All Tables")
+	} else if printType == Columns {
+		fmt.Printf("|%-30s|\n", "All Columns")
+	}
 	fmt.Println("|------------------------------|")
-	for _, v := range databases {
+	for _, v := range data {
 		fmt.Printf("|%-30s|\n", v)
 	}
 	fmt.Println("|------------------------------|")
+}
+
+func PrintDatabases(databases []interface{}) {
+	printFunc(Databases, databases)
 }
 
 func PrintTables(tables []interface{}) {
-	fmt.Println("|------------------------------|")
-	fmt.Printf("|%-30s|\n", "All Tables")
-	fmt.Println("|------------------------------|")
-	for _, v := range tables {
-		fmt.Printf("|%-30s|\n", v)
-	}
-	fmt.Println("|------------------------------|")
+	printFunc(Tables, tables)
 }
 
 func PrintColumns(columns []interface{}) {
-	fmt.Println("|------------------------------|")
-	fmt.Printf("|%-30s|\n", "All Columns")
-	fmt.Println("|------------------------------|")
-	for _, v := range columns {
-		fmt.Printf("|%-30s|\n", v)
-	}
-	fmt.Println("|------------------------------|")
+	printFunc(Columns, columns)
 }
 
 func PrintData(columns []interface{}, data [][]interface{}) {
