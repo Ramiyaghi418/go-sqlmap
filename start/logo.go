@@ -5,6 +5,7 @@ import (
 	"go-sqlmap/log"
 )
 
+// PrintLogo 打印Logo
 func PrintLogo(version string, author string, url string) {
 	logo := fmt.Sprintf(" _________      .__                         \n / "+
 		"  _____/ _____|  |   _____ _____  ______  \n \\_____  \\ / ____"+

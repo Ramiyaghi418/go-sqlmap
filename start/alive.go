@@ -7,6 +7,7 @@ import (
 	"time"
 )
 
+// DetectAlive 检测目标是否存活
 func DetectAlive(url string) bool {
 	code, _, _ := util.Request(constant.DefaultMethod, url, nil, nil)
 	if code != -1 {

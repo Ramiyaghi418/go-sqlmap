@@ -16,6 +16,7 @@ type Input struct {
 	Technique []string
 }
 
+// ParseInput 处理输入参数
 func ParseInput() Input {
 	var url string
 	var database string

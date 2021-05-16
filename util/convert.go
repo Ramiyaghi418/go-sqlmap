@@ -2,6 +2,7 @@ package util
 
 import "strings"
 
+// ConvertString 将字符串分割并转为接口数组
 func ConvertString(result string) []interface{} {
 	var final []interface{}
 	for _, v := range strings.Split(result, ",") {
@@ -10,6 +11,7 @@ func ConvertString(result string) []interface{} {
 	return final
 }
 
+// ConvertInterfaceArray 用于特殊的转换
 func ConvertInterfaceArray(columns []string, output [][]string) ([]interface{}, [][]interface{}) {
 	var outputHeaderArray []interface{}
 	var outputDataArray [][]interface{}

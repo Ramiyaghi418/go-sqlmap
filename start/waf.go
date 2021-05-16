@@ -7,6 +7,7 @@ import (
 	"strings"
 )
 
+// DetectSafeDogWaf 检测安全狗的WAF
 func DetectSafeDogWaf(url string) bool {
 	url = url + constant.DetectWafPayload
 	code, headers, body := util.Request(constant.DefaultMethod, url, nil, nil)

@@ -11,11 +11,11 @@ func RunUnionSelect(target string, params Input) bool {
 	if !success {
 		return false
 	}
-	success, suffix := core.GetSuffix(params.Url)
+	success, suffixList := core.GetSuffix(params.Url)
 	if !success {
 		return false
 	}
-	key := core.GetOrderByNum(suffix, target)
+	suffix, key := core.GetOrderByNum(suffixList, target)
 	if key == 0 {
 		return false
 	}
@@ -37,13 +37,16 @@ func RunUnionSelect(target string, params Input) bool {
 }
 
 func RunErrorBased(target string, params Input) bool {
+	// TODO
 	return true
 }
 
 func RunBoolBlind(target string, params Input) bool {
+	// TODO
 	return true
 }
 
 func RunTimeBlind(target string, params Input) bool {
+	// TODO
 	return true
 }

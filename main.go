@@ -13,7 +13,9 @@ import (
 
 func main() {
 	start.PrintLogo(constant.Version, constant.Author, constant.Url)
+
 	params := start.ParseInput()
+
 	target := util.CheckUrl(params.Url)
 	log.Info("target is " + target)
 
@@ -30,6 +32,7 @@ func main() {
 	wait()
 }
 
+// 使用信号优雅退出
 func wait() {
 	sign := make(chan os.Signal, 1)
 	done := make(chan bool, 1)

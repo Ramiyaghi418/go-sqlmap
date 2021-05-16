@@ -8,6 +8,7 @@ type Pos struct {
 	EndIndexChar string
 }
 
+// GetMinPos 获取位置中开始索引最小的
 func GetMinPos(array []Pos) Pos {
 	var valueArray []int
 	var min int
@@ -23,5 +24,8 @@ func GetMinPos(array []Pos) Pos {
 			return v
 		}
 	}
-	return array[0]
+	if len(array) > 0 {
+		return array[0]
+	}
+	return Pos{}
 }

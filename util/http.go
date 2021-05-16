@@ -9,6 +9,7 @@ import (
 	"strings"
 )
 
+// Request 发送http请求
 func Request(method string, url string, data interface{},
 	headers interface{}) (int, map[string]string, []byte) {
 	var innerData map[string]string
@@ -65,6 +66,7 @@ func Request(method string, url string, data interface{},
 	return -1, nil, nil
 }
 
+// 解决表单方式的提交
 func resolveForm(data map[string]string) []byte {
 	var temp bytes.Buffer
 	var finalData []byte
@@ -75,6 +77,7 @@ func resolveForm(data map[string]string) []byte {
 	return finalData
 }
 
+// 解决json方式的提交
 func resolveJson(data map[string]string) []byte {
 	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	bytesData, _ := json.Marshal(data)

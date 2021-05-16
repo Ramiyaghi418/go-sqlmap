@@ -4,12 +4,14 @@ import (
 	"fmt"
 )
 
+// 三种打印
 const (
 	Databases = 1
 	Tables    = 2
 	Columns   = 3
 )
 
+// 打印提取函数
 func printFunc(printType int, data []interface{}) {
 	fmt.Println("|------------------------------|")
 	if printType == Databases {
@@ -26,18 +28,22 @@ func printFunc(printType int, data []interface{}) {
 	fmt.Println("|------------------------------|")
 }
 
+// PrintDatabases 打印数据库
 func PrintDatabases(databases []interface{}) {
 	printFunc(Databases, databases)
 }
 
+// PrintTables 打印所有表
 func PrintTables(tables []interface{}) {
 	printFunc(Tables, tables)
 }
 
+// PrintColumns 打印所有列
 func PrintColumns(columns []interface{}) {
 	printFunc(Columns, columns)
 }
 
+// PrintData 打印所有数据
 func PrintData(columns []interface{}, data [][]interface{}) {
 	fmt.Print("|")
 	for i := 0; i < len(columns); i++ {
