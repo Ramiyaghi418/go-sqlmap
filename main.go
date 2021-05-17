@@ -13,22 +13,16 @@ import (
 
 func main() {
 	start.PrintLogo(constant.Version, constant.Author, constant.Url)
-
 	params := start.ParseInput()
-
 	target := util.CheckUrl(params.Url)
 	log.Info("target is " + target)
-
 	if !start.DetectAlive(target) {
 		os.Exit(-1)
 	}
-
 	if start.DetectSafeDogWaf(target) {
 		os.Exit(-1)
 	}
-
 	start.NewStarter(target, params)
-
 	wait()
 }
 
