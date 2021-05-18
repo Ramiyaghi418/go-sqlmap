@@ -8,6 +8,7 @@ import (
 )
 
 type Input struct {
+	Beta      bool
 	Url       string
 	Database  string
 	Table     string
@@ -19,11 +20,13 @@ type Input struct {
 // ParseInput 处理输入参数
 func ParseInput() Input {
 	var url string
+	var beta bool
 	var database string
 	var table string
 	var columns string
 	var help bool
 	var technique string
+	flag.BoolVar(&beta, "beta", false, "Use Beta Technique")
 	flag.StringVar(&url, "u", "", "Input Target Url")
 	flag.StringVar(&database, "D", "", "Get All Databases")
 	flag.StringVar(&table, "T", "", "Get All Tables")
@@ -60,6 +63,7 @@ func ParseInput() Input {
 	}
 
 	result := Input{
+		Beta:      beta,
 		Url:       url,
 		Database:  database,
 		Table:     table,

