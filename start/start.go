@@ -1,26 +1,22 @@
 package start
 
 import (
-	"go-sqlmap/constant"
 	"go-sqlmap/core"
+	"go-sqlmap/log"
 	"go-sqlmap/util"
 )
 
-func RunUnionSelect(target string, params Input) bool {
-	success, _ := core.DetectUnionSelectSqlInject(target, constant.DefaultMethod)
-	if !success {
-		return false
-	}
-	success, suffixList := core.GetSuffix(params.Url)
-	if !success {
-		return false
-	}
+func RunUnionSelect(target string, params Input, suffixList []string) bool {
+	log.Info("start union select injection...")
 	suffix, key := core.GetOrderByNum(suffixList, target)
 	if key == 0 {
 		return false
 	}
 	cleanUrl := util.GetCleanUrl(target)
 	pos := core.GetUnionSelectPos(suffix, cleanUrl, key)
+	if pos.StartIndex == 0 {
+		return false
+	}
 	core.GetVersion(pos, suffix, cleanUrl, key)
 	core.GetCurrentDatabase(pos, suffix, cleanUrl, key)
 	core.GetAllDatabases(pos, suffix, cleanUrl, key)
@@ -36,17 +32,29 @@ func RunUnionSelect(target string, params Input) bool {
 	return true
 }
 
-func RunErrorBased(target string, params Input) bool {
-	// TODO
-	return true
+func RunErrorBased(target string, params Input, suffixList []string) bool {
+	log.Info("start error based injection...")
+	success, suffix := core.DetectErrorBased(target, suffixList)
+	if !success {
+		return false
+	}
+	core.GetVersionByErrorBased(target, suffix)
+	core.GetCurrentDatabaseByErrorBased(target, suffix)
+	core.GetAllDatabasesByErrorBased(target, suffix)
+	core.GetAllTablesByErrorBased(target, suffix, params.Database)
+	core.GetAllColumnsByErrorBased(target, suffix, params.Database, params.Table)
+	core.GetAllDataByErrorBased(target, suffix, params.Database, params.Table, params.Columns)
+	return false
 }
 
-func RunBoolBlind(target string, params Input) bool {
+func RunBoolBlind(target string, params Input, suffixList []string) bool {
+	log.Info("start bool blind injection...")
 	// TODO
-	return true
+	return false
 }
 
-func RunTimeBlind(target string, params Input) bool {
+func RunTimeBlind(target string, params Input, suffixList []string) bool {
+	log.Info("start time blind injection...")
 	// TODO
-	return true
+	return false
 }

