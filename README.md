@@ -13,6 +13,7 @@
 - 指定具体的数据库`-D security`，即可得到这个数据库所有表
 - 再指定具体的表`-D security -T users`，即可得到这个表所有字段
 - 指定具体的字段`-C id,username,password`，加上之前的条件，可以直接脱库
+- 默认使用Updatexml函数做报错注入，使用`--beta`参数可以激活Polygon函数
 
 ![](https://raw.githubusercontent.com/EmYiQing/go-sqlmap/master/img/02.png)
 
