@@ -14,11 +14,11 @@
 - 再指定具体的表`-D security -T users`，即可得到这个表所有字段
 - 指定具体的字段`-C id,username,password`，加上之前的条件，可以直接脱库
 
-![](https://raw.githubusercontent.com/EmYiQing/go-sqlmap/master/img/01.png)
+![](https://raw.githubusercontent.com/EmYiQing/go-sqlmap/master/img/02.png)
 
 - 使用`--technique E`指定使用报错注入（适用于sqli-lab第5、6关）
 
-![](https://raw.githubusercontent.com/EmYiQing/go-sqlmap/master/img/02.png)
+![](https://raw.githubusercontent.com/EmYiQing/go-sqlmap/master/img/01.png)
 
 ## 快速开始
 
