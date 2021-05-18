@@ -5,7 +5,7 @@
 - sqlmap：渗透测试界的神器，这是一个简单的sqlmap
 - 使用Golang重写的原因：高效、生成可执行文件直接运行、无需搭建环境等
 - 测试可以支持sqli-lab前六关，传入一个有注入的url即可直接脱库
-- 目前可以做到UnionSelect回显注入和Polygon报错注入（自动化）
+- 目前可以做到UnionSelect回显注入、Updatexml和Polygon的报错注入
 
 ## 图片
 
