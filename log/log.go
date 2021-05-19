@@ -15,6 +15,11 @@ func Info(log string) {
 	fmt.Printf("[INFO] [%s] %s\n", getTime(), log)
 }
 
+// InfoLine 不含换行日志
+func InfoLine(log string) {
+	fmt.Printf("[INFO] [%s] %s", getTime(), log)
+}
+
 // Warn 日志
 func Warn(log string) {
 	fmt.Printf("[WARN] [%s] %s\n", getTime(), log)

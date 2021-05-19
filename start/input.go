@@ -31,8 +31,8 @@ func ParseInput() Input {
 	flag.StringVar(&database, "D", "", "Get All Databases")
 	flag.StringVar(&table, "T", "", "Get All Tables")
 	flag.StringVar(&columns, "C", "", "Get All Columns")
-	flag.StringVar(&technique, "technique", "BTUE",
-		"Set Technique(B:bool-blind,T:time-blind,U:union-select,E:error-based)")
+	flag.StringVar(&technique, "technique", "BUE",
+		"Set Technique(B:bool-blind,U:union-select,E:error-based)")
 	flag.BoolVar(&help, "h", false, "Help Information")
 	flag.Parse()
 
@@ -49,9 +49,6 @@ func ParseInput() Input {
 	}
 
 	var finalTech []string
-	if strings.Contains(technique, constant.TimeBlindTech) {
-		finalTech = append(finalTech, constant.TimeBlindTech)
-	}
 	if strings.Contains(technique, constant.BoolBlindTech) {
 		finalTech = append(finalTech, constant.BoolBlindTech)
 	}

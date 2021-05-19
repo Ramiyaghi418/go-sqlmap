@@ -35,11 +35,5 @@ func NewStarter(target string, params Input) {
 			}
 			log.Info("finish bool blind injection")
 		}
-		if v == constant.TimeBlindTech {
-			if RunTimeBlind(target, params, suffixList) {
-				return
-			}
-			log.Info("finish time blind injection")
-		}
 	}
 }

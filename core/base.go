@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-// DetectSqlInject 检测是否存在Union Select注入
+// DetectSqlInject 检测是否存在注入
 func DetectSqlInject(url string, method string) (bool, string) {
 	for _, v := range constant.SuffixList {
 		innerUrl := url + v
@@ -19,6 +19,13 @@ func DetectSqlInject(url string, method string) (bool, string) {
 				log.Info("detected sql injection!")
 				return true, innerUrl
 			}
+		}
+		_, _, trueBody := util.Request(method,
+			innerUrl+constant.BlindDetectTruePayload, nil, nil)
+		_, _, falseBody := util.Request(method,
+			innerUrl+constant.BlindDetectFalsePayload, nil, nil)
+		if string(trueBody) != string(falseBody) {
+			return true, innerUrl
 		}
 	}
 	log.Info("not detected sql injection!")

