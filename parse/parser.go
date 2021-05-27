@@ -11,7 +11,7 @@ type BaseRequest struct {
 	Path    string
 	Headers map[string]string
 	Cookie  map[string]string
-	Data    string
+	Data    map[string]string
 }
 
 // RequestParse 解析HTTP协议
@@ -39,7 +39,7 @@ func RequestParse(filename string) (req *BaseRequest) {
 	requestMethod := firstTemp[0]
 	path := firstTemp[1]
 
-	var cookieIndex int
+	cookieIndex := -1
 	headers := make(map[string]string)
 	for i := 1; i < len(temp); i++ {
 		if strings.TrimSpace(temp[i]) == "" {
@@ -53,26 +53,39 @@ func RequestParse(filename string) (req *BaseRequest) {
 		}
 		headers[key] = value
 	}
+
 	cookies := make(map[string]string)
-	tempCookie := strings.Split(temp[cookieIndex], ": ")[1]
-	if !strings.Contains(tempCookie, "; ") {
-		key := strings.Split(tempCookie, "=")[0]
-		value := strings.Split(tempCookie, "=")[1]
-		cookies[key] = value
-	} else {
-		for _, v := range strings.Split(tempCookie, "; ") {
-			key := strings.Split(v, "=")[0]
-			value := strings.Split(v, "=")[1]
+	if cookieIndex != -1 {
+		tempCookie := strings.Split(temp[cookieIndex], ": ")[1]
+		if !strings.Contains(tempCookie, "; ") {
+			key := strings.Split(tempCookie, "=")[0]
+			value := strings.Split(tempCookie, "=")[1]
 			cookies[key] = value
+		} else {
+			for _, v := range strings.Split(tempCookie, "; ") {
+				key := strings.Split(v, "=")[0]
+				value := strings.Split(v, "=")[1]
+				cookies[key] = value
+			}
 		}
 	}
 
 	dataTemp := strings.Split(request, lineSep+lineSep)
 	data := ""
+	finalData := make(map[string]string)
 	if len(dataTemp) > 1 {
-		data = dataTemp[1]
+		data = strings.TrimSpace(dataTemp[1])
+		if data != "" {
+			items := strings.Split(data, "&")
+			for _, v := range items {
+				innerTemp := strings.Split(v, "=")
+				if len(innerTemp) > 1 {
+					finalData[innerTemp[0]] = innerTemp[1]
+				}
+			}
+		}
 	}
-	req.Data = data
+	req.Data = finalData
 	req.Cookie = cookies
 	req.Method = requestMethod
 	req.Path = path

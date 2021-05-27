@@ -26,7 +26,7 @@ func (w *Scanner) Run() {
 	if start.DetectSafeDogWaf(target) {
 		os.Exit(-1)
 	}
-	start.NewStarter(target, w.Options)
+	start.NewSimpleStarter(target, w.Options)
 }
 
 func (w *Scanner) Stop() {

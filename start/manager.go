@@ -1,18 +1,20 @@
 package start
 
 import (
-	"github.com/EmYiQing/go-sqlmap/core"
+	"github.com/EmYiQing/go-sqlmap/line"
 	"github.com/EmYiQing/go-sqlmap/log"
+	"github.com/EmYiQing/go-sqlmap/parse"
 	"github.com/EmYiQing/go-sqlmap/str"
+	"strings"
 )
 
-// NewStarter 核心启动函数
-func NewStarter(target string, params Input) {
-	success, _ := core.DetectSqlInject(target, str.RequestMethod)
+// NewSimpleStarter 启动简单方式的函数
+func NewSimpleStarter(target string, params Input) {
+	success, _ := line.DetectSqlInject(target, str.RequestMethod)
 	if !success {
 		return
 	}
-	success, suffixList := core.GetSuffixList(params.Url)
+	success, suffixList := line.GetSuffixList(params.Url)
 	if !success {
 		return
 	}
@@ -36,4 +38,21 @@ func NewStarter(target string, params Input) {
 			log.Info("finish bool blind injection")
 		}
 	}
+}
+
+// NewStarter 启动请求文件形式的函数
+func NewStarter(request parse.BaseRequest, params Input) {
+	var headerInjectKeys []string
+	var dataInjectKeys []string
+	for k, v := range request.Headers {
+		if strings.HasSuffix(v, "*") {
+			headerInjectKeys = append(headerInjectKeys, k)
+		}
+	}
+	for k, v := range request.Data {
+		if strings.HasSuffix(v, "*") {
+			dataInjectKeys = append(dataInjectKeys, k)
+		}
+	}
+	// TODO http request file injection
 }

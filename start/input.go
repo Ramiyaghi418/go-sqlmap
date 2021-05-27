@@ -2,6 +2,7 @@ package start
 
 import (
 	"flag"
+	"github.com/EmYiQing/go-sqlmap/log"
 	"github.com/EmYiQing/go-sqlmap/str"
 	"os"
 	"strings"
@@ -12,6 +13,7 @@ type Input struct {
 	Url       string
 	Database  string
 	Table     string
+	Filename  string
 	Columns   []string
 	Technique []string
 }
@@ -25,6 +27,7 @@ func ParseInput() Input {
 	var columns string
 	var help bool
 	var technique string
+	var filename string
 	flag.BoolVar(&beta, "beta", false, "Use Beta Technique")
 	flag.StringVar(&url, "u", "", "Input Target Url")
 	flag.StringVar(&database, "D", "", "Get All Databases")
@@ -32,6 +35,7 @@ func ParseInput() Input {
 	flag.StringVar(&columns, "C", "", "Get All Columns")
 	flag.StringVar(&technique, "technique", "BUE",
 		"Set Technique(B:bool-blind,U:union-select,E:error-based)")
+	flag.StringVar(&filename, "r", "", "Use Request Filename")
 	flag.BoolVar(&help, "h", false, "Help Information")
 	flag.Parse()
 
@@ -58,6 +62,19 @@ func ParseInput() Input {
 		finalTech = append(finalTech, str.UnionSelectTech)
 	}
 
+	if strings.TrimSpace(filename) != "" {
+		_, err := os.Stat(filename)
+		if err != nil {
+			if os.IsNotExist(err) {
+				log.Info("request file not exist!")
+				if url == "" {
+					log.Error("need url or request file!")
+					os.Exit(-1)
+				}
+			}
+		}
+	}
+
 	result := Input{
 		Beta:      beta,
 		Url:       url,
@@ -65,6 +82,7 @@ func ParseInput() Input {
 		Table:     table,
 		Columns:   finalColumns,
 		Technique: finalTech,
+		Filename:  filename,
 	}
 
 	return result

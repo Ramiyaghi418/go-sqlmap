@@ -1,4 +1,4 @@
-package core
+package line
 
 import (
 	"bytes"
