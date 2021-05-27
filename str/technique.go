@@ -1,4 +1,4 @@
-package constant
+package str
 
 const (
 	// BoolBlindTech 基于布尔的盲注技术

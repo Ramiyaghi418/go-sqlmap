@@ -2,9 +2,9 @@ package main
 
 import (
 	"fmt"
-	"github.com/EmYiQing/go-sqlmap/constant"
 	"github.com/EmYiQing/go-sqlmap/log"
 	"github.com/EmYiQing/go-sqlmap/start"
+	"github.com/EmYiQing/go-sqlmap/str"
 	"github.com/EmYiQing/go-sqlmap/util"
 	"os"
 	"os/signal"
@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	start.PrintLogo(constant.Version, constant.Author, constant.Url)
+	start.PrintLogo(str.Version, str.Author, str.Url)
 	params := start.ParseInput()
 	target := util.CheckUrl(params.Url)
 	log.Info("target is " + target)

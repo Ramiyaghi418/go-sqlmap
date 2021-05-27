@@ -2,7 +2,7 @@ package start
 
 import (
 	"flag"
-	"github.com/EmYiQing/go-sqlmap/constant"
+	"github.com/EmYiQing/go-sqlmap/str"
 	"os"
 	"strings"
 )
@@ -12,7 +12,6 @@ type Input struct {
 	Url       string
 	Database  string
 	Table     string
-	Shell     bool
 	Columns   []string
 	Technique []string
 }
@@ -49,14 +48,14 @@ func ParseInput() Input {
 	}
 
 	var finalTech []string
-	if strings.Contains(technique, constant.BoolBlindTech) {
-		finalTech = append(finalTech, constant.BoolBlindTech)
+	if strings.Contains(technique, str.BoolBlindTech) {
+		finalTech = append(finalTech, str.BoolBlindTech)
 	}
-	if strings.Contains(technique, constant.ErrorBasedTech) {
-		finalTech = append(finalTech, constant.ErrorBasedTech)
+	if strings.Contains(technique, str.ErrorBasedTech) {
+		finalTech = append(finalTech, str.ErrorBasedTech)
 	}
-	if strings.Contains(technique, constant.UnionSelectTech) {
-		finalTech = append(finalTech, constant.UnionSelectTech)
+	if strings.Contains(technique, str.UnionSelectTech) {
+		finalTech = append(finalTech, str.UnionSelectTech)
 	}
 
 	result := Input{

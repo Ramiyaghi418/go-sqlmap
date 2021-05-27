@@ -1,4 +1,4 @@
-package constant
+package str
 
 // 安全狗WAF相关常量
 const (

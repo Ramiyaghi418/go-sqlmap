@@ -20,6 +20,10 @@
 
 ## 图片
 
+- 演示
+
+![](https://raw.githubusercontent.com/EmYiQing/github.com/EmYiQing/go-sqlmap/master/img/demo.gif)
+
 - Union注入
 
 ![](https://raw.githubusercontent.com/EmYiQing/github.com/EmYiQing/go-sqlmap/master/img/02.png)

@@ -1,4 +1,9 @@
-package constant
+package str
+
+var (
+	// SuffixList 可能的闭合符号
+	SuffixList = []string{"%20", "%27", "%22", "%29", "%27%29", "%22%29"}
+)
 
 const (
 	// DetectWafPayload 检测WAF的Payload
