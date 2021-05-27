@@ -1,4 +1,4 @@
-# github.com/EmYiQing/go-sqlmap
+# go-sqlmap
 
 ## 介绍
 
