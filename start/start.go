@@ -1,9 +1,9 @@
 package start
 
 import (
-	"go-sqlmap/core"
-	"go-sqlmap/log"
-	"go-sqlmap/util"
+	"github.com/EmYiQing/go-sqlmap/core"
+	"github.com/EmYiQing/go-sqlmap/log"
+	"github.com/EmYiQing/go-sqlmap/util"
 )
 
 // RunUnionSelect UnionSelect注入
@@ -58,7 +58,7 @@ func RunErrorBased(target string, params Input, suffixList []string) bool {
 	return true
 }
 
-// RunBoolBlind BoolBlid注入
+// RunBoolBlind BoolBlind注入
 func RunBoolBlind(target string, params Input, suffixList []string) bool {
 	log.Info("start bool blind injection...")
 	success, suffix := core.GetBoolBlindSuffix(target, suffixList)

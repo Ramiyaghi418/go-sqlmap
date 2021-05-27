@@ -1,7 +1,7 @@
 package util
 
 import (
-	"go-sqlmap/log"
+	"github.com/EmYiQing/go-sqlmap/log"
 	"os"
 	"strings"
 )

@@ -1,4 +1,4 @@
-# Go-Sqlmap
+# github.com/EmYiQing/go-sqlmap
 
 ## 介绍
 
@@ -22,22 +22,22 @@
 
 - Union注入
 
-![](https://raw.githubusercontent.com/EmYiQing/go-sqlmap/master/img/02.png)
+![](https://raw.githubusercontent.com/EmYiQing/github.com/EmYiQing/go-sqlmap/master/img/02.png)
 
 - 报错注入
 
-![](https://raw.githubusercontent.com/EmYiQing/go-sqlmap/master/img/01.png)
+![](https://raw.githubusercontent.com/EmYiQing/github.com/EmYiQing/go-sqlmap/master/img/01.png)
 
 - 布尔盲注
 
-![](https://raw.githubusercontent.com/EmYiQing/go-sqlmap/master/img/03.png)
+![](https://raw.githubusercontent.com/EmYiQing/github.com/EmYiQing/go-sqlmap/master/img/03.png)
 
 ## 快速开始
 
-[下载地址](https://github.com/EmYiQing/go-sqlmap/releases)
+[下载地址](https://github.com/EmYiQing/github.com/EmYiQing/go-sqlmap/releases)
 
 ```shell
-go-sqlmap.exe -u http://sqlilab-ip/Less-1/?id=1 -D security -T users -C id,username,password --technique U
+github.com/EmYiQing/go-sqlmap.exe -u http://sqlilab-ip/Less-1/?id=1 -D security -T users -C id,username,password --technique U
 ```
 
 

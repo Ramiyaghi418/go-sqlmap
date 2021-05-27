@@ -1,9 +1,9 @@
 package core
 
 import (
-	"go-sqlmap/constant"
-	"go-sqlmap/log"
-	"go-sqlmap/util"
+	"github.com/EmYiQing/go-sqlmap/constant"
+	"github.com/EmYiQing/go-sqlmap/log"
+	"github.com/EmYiQing/go-sqlmap/util"
 	"os"
 	"strings"
 )

@@ -2,7 +2,7 @@ package start
 
 import (
 	"flag"
-	"go-sqlmap/constant"
+	"github.com/EmYiQing/go-sqlmap/constant"
 	"os"
 	"strings"
 )

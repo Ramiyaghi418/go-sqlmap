@@ -2,7 +2,7 @@ package start
 
 import (
 	"fmt"
-	"go-sqlmap/log"
+	"github.com/EmYiQing/go-sqlmap/log"
 )
 
 // PrintLogo 打印Logo
@@ -15,5 +15,5 @@ func PrintLogo(version string, author string, url string) {
 		"Sqlmap-Simplified-Version-%s(golang)\nAuthor:%s "+
 		"Github:%s", version, author, url)
 	fmt.Println(logo)
-	log.Info("start go-sqlmap...")
+	log.Info("start github.com/EmYiQing/go-sqlmap...")
 }

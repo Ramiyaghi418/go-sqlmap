@@ -1,9 +1,9 @@
 package start
 
 import (
-	"go-sqlmap/constant"
-	"go-sqlmap/core"
-	"go-sqlmap/log"
+	"github.com/EmYiQing/go-sqlmap/constant"
+	"github.com/EmYiQing/go-sqlmap/core"
+	"github.com/EmYiQing/go-sqlmap/log"
 )
 
 // NewStarter 核心启动函数

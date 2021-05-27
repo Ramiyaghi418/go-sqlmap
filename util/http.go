@@ -2,8 +2,8 @@ package util
 
 import (
 	"bytes"
+	"github.com/EmYiQing/go-sqlmap/log"
 	jsoniter "github.com/json-iterator/go"
-	"go-sqlmap/log"
 	"io/ioutil"
 	"net/http"
 	"strings"
