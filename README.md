@@ -1,14 +1,16 @@
 # go-sqlmap
 
-## Introduce
+## 介绍
 
 - sqlmap：渗透测试界的神器，这是一个简单的sqlmap
 - 使用Golang重写的原因：高效、生成可执行文件直接运行、无需搭建环境等
 - 测试通过sqli-lab前八关，传入一个有注入的url即可直接脱库
 - 目前可以做到UnionSelect回显注入、Updatexml和Polygon的报错注入、布尔盲注
 
+## Introduce
+
 - Sqlmap is a famous tool in penetration testing field, and this is a simple sqlmap
-- The reasons for using golang rewriting are: high efficiency, generating executable files to run directly, no need to build environment, etc
+- The reasons for using golang rewriting are: high efficiency, generating executable files to run directly, etc
 - At present, sqli-labs(https://github.com/Audi-1/sqli-labs) can be successfully injected into the first eight levels
 - Union Select Injection,Updatexml and Polygon Error Based Injection and Bool Blind Injection are currently supported
 
@@ -25,9 +27,7 @@
 
 ## 图片
 
-- Use Sqli-Labs For Test
-
-[sqli-labs github](https://github.com/Audi-1/sqli-labs)
+- Use Sqli-Labs For Test: [sqli-labs github](https://github.com/Audi-1/sqli-labs)
 
 ![](https://raw.githubusercontent.com/EmYiQing/go-sqlmap/master/img/demo.gif)
 
