@@ -1,4 +1,4 @@
-package str
+package constant
 
 const (
 	// Version 当前版本

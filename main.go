@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
+	"github.com/EmYiQing/go-sqlmap/constant"
+	"github.com/EmYiQing/go-sqlmap/input"
 	"github.com/EmYiQing/go-sqlmap/log"
 	"github.com/EmYiQing/go-sqlmap/parse"
 	"github.com/EmYiQing/go-sqlmap/start"
-	"github.com/EmYiQing/go-sqlmap/str"
 	"github.com/EmYiQing/go-sqlmap/util"
 	"os"
 	"os/signal"
@@ -13,39 +14,31 @@ import (
 )
 
 func main() {
-	start.PrintLogo(str.Version, str.Author, str.Url)
-	params := start.ParseInput()
-	var target string
+	start.PrintLogo(constant.Version, constant.Author, constant.Url)
+	params := input.ParseInput()
 	if params.Url != "" {
-		target = util.CheckUrl(params.Url)
-		log.Info("target is " + target)
-		if !start.DetectAlive(target) {
-			os.Exit(-1)
-		}
-		if start.DetectSafeDogWaf(target) {
-			os.Exit(-1)
-		}
+		target := doPre(params.Url)
 		start.NewSimpleStarter(target, params)
 		wait()
 	} else {
-		req := parse.RequestParse(params.Filename)
-		host, ok := req.Headers["Host"]
-		if !ok {
-			log.Error("must have host header!")
-			os.Exit(-1)
-		}
-		url := "http://" + host + req.Path
-		target = util.CheckUrl(url)
-		log.Info("target is " + target)
-		if !start.DetectAlive(target) {
-			os.Exit(-1)
-		}
-		if start.DetectSafeDogWaf(target) {
-			os.Exit(-1)
-		}
-		start.NewStarter(*req, params)
+		req := parse.NewBaseRequest(params.Filename)
+		doPre(parse.GetUrl(req))
+		start.NewStarter(req, params)
 		wait()
 	}
+}
+
+// 预处理
+func doPre(url string) string {
+	target := util.CheckUrl(url)
+	log.Info("target is " + target)
+	if !start.DetectAlive(target) {
+		os.Exit(-1)
+	}
+	if start.DetectSafeDogWaf(target) {
+		os.Exit(-1)
+	}
+	return target
 }
 
 // 使用信号优雅退出

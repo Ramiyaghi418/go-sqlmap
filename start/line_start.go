@@ -1,13 +1,14 @@
 package start
 
 import (
+	"github.com/EmYiQing/go-sqlmap/input"
 	"github.com/EmYiQing/go-sqlmap/line"
 	"github.com/EmYiQing/go-sqlmap/log"
 	"github.com/EmYiQing/go-sqlmap/util"
 )
 
 // RunUnionSelect UnionSelect注入
-func RunUnionSelect(target string, params Input, suffixList []string) bool {
+func RunUnionSelect(target string, params input.Input, suffixList []string) bool {
 	log.Info("start union select injection...")
 	suffix, key := line.GetOrderByNum(suffixList, target)
 	if key == 0 {
@@ -34,7 +35,7 @@ func RunUnionSelect(target string, params Input, suffixList []string) bool {
 }
 
 // RunErrorBased ErrorBased注入
-func RunErrorBased(target string, params Input, suffixList []string) bool {
+func RunErrorBased(target string, params input.Input, suffixList []string) bool {
 	log.Info("start error based injection...")
 	success, suffix := line.DetectErrorBased(target, suffixList)
 	if !success {
@@ -71,7 +72,7 @@ func RunErrorBased(target string, params Input, suffixList []string) bool {
 }
 
 // RunBoolBlind BoolBlind注入
-func RunBoolBlind(target string, params Input, suffixList []string) bool {
+func RunBoolBlind(target string, params input.Input, suffixList []string) bool {
 	log.Info("start bool blind injection...")
 	success, suffix := line.GetBoolBlindSuffix(target, suffixList)
 	if !success {

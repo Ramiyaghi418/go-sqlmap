@@ -1,4 +1,4 @@
-package str
+package constant
 
 var (
 	// RequestMethod 默认请求方式

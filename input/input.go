@@ -1,9 +1,9 @@
-package start
+package input
 
 import (
 	"flag"
+	"github.com/EmYiQing/go-sqlmap/constant"
 	"github.com/EmYiQing/go-sqlmap/log"
-	"github.com/EmYiQing/go-sqlmap/str"
 	"os"
 	"strings"
 )
@@ -14,6 +14,7 @@ type Input struct {
 	Database  string
 	Table     string
 	Filename  string
+	Param     string
 	Columns   []string
 	Technique []string
 }
@@ -25,6 +26,7 @@ func ParseInput() Input {
 	var database string
 	var table string
 	var columns string
+	var param string
 	var help bool
 	var technique string
 	var filename string
@@ -33,6 +35,7 @@ func ParseInput() Input {
 	flag.StringVar(&database, "D", "", "Get All Databases")
 	flag.StringVar(&table, "T", "", "Get All Tables")
 	flag.StringVar(&columns, "C", "", "Get All Columns")
+	flag.StringVar(&param, "p", "", "Set Injection Param")
 	flag.StringVar(&technique, "technique", "BUE",
 		"Set Technique(B:bool-blind,U:union-select,E:error-based)")
 	flag.StringVar(&filename, "r", "", "Use Request Filename")
@@ -52,14 +55,14 @@ func ParseInput() Input {
 	}
 
 	var finalTech []string
-	if strings.Contains(technique, str.BoolBlindTech) {
-		finalTech = append(finalTech, str.BoolBlindTech)
+	if strings.Contains(technique, constant.BoolBlindTech) {
+		finalTech = append(finalTech, constant.BoolBlindTech)
 	}
-	if strings.Contains(technique, str.ErrorBasedTech) {
-		finalTech = append(finalTech, str.ErrorBasedTech)
+	if strings.Contains(technique, constant.ErrorBasedTech) {
+		finalTech = append(finalTech, constant.ErrorBasedTech)
 	}
-	if strings.Contains(technique, str.UnionSelectTech) {
-		finalTech = append(finalTech, str.UnionSelectTech)
+	if strings.Contains(technique, constant.UnionSelectTech) {
+		finalTech = append(finalTech, constant.UnionSelectTech)
 	}
 
 	if strings.TrimSpace(filename) != "" {
@@ -81,6 +84,7 @@ func ParseInput() Input {
 		Database:  database,
 		Table:     table,
 		Columns:   finalColumns,
+		Param:     param,
 		Technique: finalTech,
 		Filename:  filename,
 	}

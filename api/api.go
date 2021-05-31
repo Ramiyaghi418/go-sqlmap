@@ -1,6 +1,7 @@
 package api
 
 import (
+	"github.com/EmYiQing/go-sqlmap/input"
 	"github.com/EmYiQing/go-sqlmap/log"
 	"github.com/EmYiQing/go-sqlmap/start"
 	"github.com/EmYiQing/go-sqlmap/util"
@@ -8,10 +9,10 @@ import (
 )
 
 type Scanner struct {
-	Options start.Input
+	Options input.Input
 }
 
-func NewScanner(options start.Input) *Scanner {
+func NewScanner(options input.Input) *Scanner {
 	return &Scanner{
 		Options: options,
 	}
