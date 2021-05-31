@@ -1,4 +1,4 @@
-package line
+package core
 
 import "sort"
 

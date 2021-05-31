@@ -5,7 +5,6 @@ import (
 	"github.com/EmYiQing/go-sqlmap/constant"
 	"github.com/EmYiQing/go-sqlmap/input"
 	"github.com/EmYiQing/go-sqlmap/log"
-	"github.com/EmYiQing/go-sqlmap/parse"
 	"github.com/EmYiQing/go-sqlmap/start"
 	"github.com/EmYiQing/go-sqlmap/util"
 	"os"
@@ -18,12 +17,7 @@ func main() {
 	params := input.ParseInput()
 	if params.Url != "" {
 		target := doPre(params.Url)
-		start.NewSimpleStarter(target, params)
-		wait()
-	} else {
-		req := parse.NewBaseRequest(params.Filename)
-		doPre(parse.GetUrl(req))
-		start.NewStarter(req, params)
+		start.NewStarter(target, params)
 		wait()
 	}
 }

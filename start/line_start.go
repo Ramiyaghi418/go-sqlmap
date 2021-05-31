@@ -2,8 +2,8 @@ package start
 
 import (
 	"github.com/EmYiQing/go-sqlmap/constant"
+	"github.com/EmYiQing/go-sqlmap/core"
 	"github.com/EmYiQing/go-sqlmap/input"
-	"github.com/EmYiQing/go-sqlmap/line"
 	"github.com/EmYiQing/go-sqlmap/log"
 	"github.com/EmYiQing/go-sqlmap/parse"
 )
@@ -11,27 +11,27 @@ import (
 // RunUnionSelect UnionSelect注入
 func RunUnionSelect(fixUrl parse.BaseUrl, params input.Input, suffixList []string) bool {
 	log.Info("start union select injection...")
-	suffix, key := line.GetOrderByNum(fixUrl, params.Param, suffixList)
+	suffix, key := core.GetOrderByNum(fixUrl, params.Param, suffixList)
 	if key == 0 {
 		return false
 	}
 	paramKey := params.Param
 	fixUrl.Params[paramKey] = constant.UnionSelectUnionCondition
-	pos := line.GetUnionSelectPos(suffix, fixUrl, paramKey, key)
+	pos := core.GetUnionSelectPos(suffix, fixUrl, paramKey, key)
 	if pos.StartIndex == 0 {
 		return false
 	}
-	line.GetVersion(pos, suffix, fixUrl, paramKey, key)
-	line.GetCurrentDatabase(pos, suffix, fixUrl, paramKey, key)
-	line.GetAllDatabases(pos, suffix, fixUrl, paramKey, key)
+	core.GetVersion(pos, suffix, fixUrl, paramKey, key)
+	core.GetCurrentDatabase(pos, suffix, fixUrl, paramKey, key)
+	core.GetAllDatabases(pos, suffix, fixUrl, paramKey, key)
 	if params.Database != "" {
-		line.GetAllTables(pos, suffix, fixUrl, paramKey, key, params.Database)
+		core.GetAllTables(pos, suffix, fixUrl, paramKey, key, params.Database)
 	}
 	if params.Database != "" && params.Table != "" {
-		line.GetColumns(pos, suffix, fixUrl, paramKey, key, params.Database, params.Table)
+		core.GetColumns(pos, suffix, fixUrl, paramKey, key, params.Database, params.Table)
 	}
 	if params.Database != "" && params.Table != "" && len(params.Columns) > 0 {
-		line.GetData(pos, suffix, fixUrl, paramKey, key, params.Database, params.Table, params.Columns)
+		core.GetData(pos, suffix, fixUrl, paramKey, key, params.Database, params.Table, params.Columns)
 	}
 	return true
 }
@@ -39,35 +39,35 @@ func RunUnionSelect(fixUrl parse.BaseUrl, params input.Input, suffixList []strin
 // RunErrorBased ErrorBased注入
 func RunErrorBased(fixUrl parse.BaseUrl, params input.Input, suffixList []string) bool {
 	log.Info("start error based injection...")
-	success, suffix := line.DetectErrorBased(fixUrl, params.Param, suffixList)
+	success, suffix := core.DetectErrorBased(fixUrl, params.Param, suffixList)
 	if !success {
 		return false
 	}
 	if params.Beta == true {
-		line.GetVersionByErrorBasedPolygon(fixUrl, params.Param, suffix)
-		line.GetCurrentDatabaseByErrorBasedPolygon(fixUrl, params.Param, suffix)
-		line.GetAllDatabasesByErrorBasedPolygon(fixUrl, params.Param, suffix)
+		core.GetVersionByErrorBasedPolygon(fixUrl, params.Param, suffix)
+		core.GetCurrentDatabaseByErrorBasedPolygon(fixUrl, params.Param, suffix)
+		core.GetAllDatabasesByErrorBasedPolygon(fixUrl, params.Param, suffix)
 		if params.Database != "" {
-			line.GetAllTablesByErrorBasedPolygon(fixUrl, params.Param, suffix, params.Database)
+			core.GetAllTablesByErrorBasedPolygon(fixUrl, params.Param, suffix, params.Database)
 		}
 		if params.Database != "" && params.Table != "" {
-			line.GetAllColumnsByErrorBasedPolygon(fixUrl, params.Param, suffix, params.Database, params.Table)
+			core.GetAllColumnsByErrorBasedPolygon(fixUrl, params.Param, suffix, params.Database, params.Table)
 		}
 		if params.Database != "" && params.Table != "" && len(params.Columns) > 0 {
-			line.GetAllDataByErrorBasedPolygon(fixUrl, params.Param, suffix, params.Database, params.Table, params.Columns)
+			core.GetAllDataByErrorBasedPolygon(fixUrl, params.Param, suffix, params.Database, params.Table, params.Columns)
 		}
 	} else {
-		line.GetVersionByErrorBased(fixUrl, params.Param, suffix)
-		line.GetCurrentDatabaseByErrorBased(fixUrl, params.Param, suffix)
-		line.GetAllDatabasesByErrorBased(fixUrl, params.Param, suffix)
+		core.GetVersionByErrorBased(fixUrl, params.Param, suffix)
+		core.GetCurrentDatabaseByErrorBased(fixUrl, params.Param, suffix)
+		core.GetAllDatabasesByErrorBased(fixUrl, params.Param, suffix)
 		if params.Database != "" {
-			line.GetAllTablesByErrorBased(fixUrl, params.Param, suffix, params.Database)
+			core.GetAllTablesByErrorBased(fixUrl, params.Param, suffix, params.Database)
 		}
 		if params.Database != "" && params.Table != "" {
-			line.GetAllColumnsByErrorBased(fixUrl, params.Param, suffix, params.Database, params.Table)
+			core.GetAllColumnsByErrorBased(fixUrl, params.Param, suffix, params.Database, params.Table)
 		}
 		if params.Database != "" && params.Table != "" && len(params.Columns) > 0 {
-			line.GetAllDataByErrorBased(fixUrl, params.Param, suffix, params.Database, params.Table, params.Columns)
+			core.GetAllDataByErrorBased(fixUrl, params.Param, suffix, params.Database, params.Table, params.Columns)
 		}
 	}
 	return true
@@ -76,21 +76,21 @@ func RunErrorBased(fixUrl parse.BaseUrl, params input.Input, suffixList []string
 // RunBoolBlind BoolBlind注入
 func RunBoolBlind(fixUrl parse.BaseUrl, params input.Input, suffixList []string) bool {
 	log.Info("start bool blind injection...")
-	success, suffix := line.GetBoolBlindSuffix(fixUrl, params.Param, suffixList)
+	success, suffix := core.GetBoolBlindSuffix(fixUrl, params.Param, suffixList)
 	if !success {
 		return false
 	}
-	line.GetVersionByBoolBlind(fixUrl, params.Param, suffix)
-	line.GetCurrentDatabaseByBoolBlind(fixUrl, params.Param, suffix)
-	line.GetAllDatabasesByBoolBlind(fixUrl, params.Param, suffix)
+	core.GetVersionByBoolBlind(fixUrl, params.Param, suffix)
+	core.GetCurrentDatabaseByBoolBlind(fixUrl, params.Param, suffix)
+	core.GetAllDatabasesByBoolBlind(fixUrl, params.Param, suffix)
 	if params.Database != "" {
-		line.GetAllTablesByBoolBlind(fixUrl, params.Param, suffix, params.Database)
+		core.GetAllTablesByBoolBlind(fixUrl, params.Param, suffix, params.Database)
 	}
 	if params.Database != "" && params.Table != "" {
-		line.GetAllColumnsByBoolBlind(fixUrl, params.Param, suffix, params.Database, params.Table)
+		core.GetAllColumnsByBoolBlind(fixUrl, params.Param, suffix, params.Database, params.Table)
 	}
 	if params.Database != "" && params.Table != "" && len(params.Columns) > 0 {
-		line.GetAllDataByBoolBlind(fixUrl, params.Param, suffix, params.Database, params.Table, params.Columns)
+		core.GetAllDataByBoolBlind(fixUrl, params.Param, suffix, params.Database, params.Table, params.Columns)
 	}
 	return true
 }

@@ -1,4 +1,4 @@
-package line
+package core
 
 import (
 	"github.com/EmYiQing/go-sqlmap/constant"

@@ -22,7 +22,7 @@ func Request(method string, url string, data interface{},
 	if headers == nil {
 		innerHeaders = make(map[string]string)
 	} else {
-		innerHeaders = data.(map[string]string)
+		innerHeaders = headers.(map[string]string)
 	}
 	client := http.Client{}
 	var (
@@ -32,9 +32,9 @@ func Request(method string, url string, data interface{},
 	if value, ok := innerHeaders["Content-Type"]; ok {
 		if value == "application/json" {
 			resolveJson(innerData)
+		} else {
+			finalData = resolveForm(innerData)
 		}
-	} else {
-		finalData = resolveForm(innerData)
 	}
 	if len(finalData) != 0 {
 		req, _ = http.NewRequest(method, url, bytes.NewBuffer(finalData))
@@ -44,6 +44,7 @@ func Request(method string, url string, data interface{},
 	for k, v := range innerHeaders {
 		req.Header.Set(k, v)
 	}
+	req.Header.Del("Accept-Encoding")
 	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "+
 		"AppleWebKit/537.36 (KHTML, like Gecko) Chrome/88.0.4324.182 Safari/537.36")
 	resp, err := client.Do(req)

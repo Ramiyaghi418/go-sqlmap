@@ -1,4 +1,4 @@
-package line
+package core
 
 import (
 	"github.com/EmYiQing/go-sqlmap/constant"
@@ -10,8 +10,8 @@ import (
 
 // DetectSqlInject 检测是否存在注入
 func DetectSqlInject(fixUrl parse.BaseUrl, paramKey string) bool {
+	temp := fixUrl.Params[paramKey]
 	for _, v := range constant.SuffixList {
-		temp := fixUrl.Params[paramKey]
 		fixUrl.SetParam(paramKey, temp+v)
 		response := fixUrl.SendRequestByBaseUrl()
 		if response.Code != -1 {
@@ -22,9 +22,9 @@ func DetectSqlInject(fixUrl parse.BaseUrl, paramKey string) bool {
 				return true
 			}
 		}
-		fixUrl.SetParam(paramKey, temp+constant.BlindDetectTruePayload)
+		fixUrl.SetParam(paramKey, temp+v+constant.BlindDetectTruePayload)
 		trueResp := fixUrl.SendRequestByBaseUrl()
-		fixUrl.SetParam(paramKey, temp+constant.BlindDetectFalsePayload)
+		fixUrl.SetParam(paramKey, temp+v+constant.BlindDetectFalsePayload)
 		falseResp := fixUrl.SendRequestByBaseUrl()
 		if len(trueResp.Body) != len(falseResp.Body) {
 			continue
