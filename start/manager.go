@@ -35,7 +35,7 @@ func NewSimpleStarter(target string, params input.Input) {
 			log.Info("finish error based injection")
 		}
 		if v == constant.BoolBlindTech {
-			if RunBoolBlind(target, params, suffixList) {
+			if RunBoolBlind(fixUrl, params, suffixList) {
 				return
 			}
 			log.Info("finish bool blind injection")

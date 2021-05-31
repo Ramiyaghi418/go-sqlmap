@@ -74,23 +74,23 @@ func RunErrorBased(fixUrl parse.BaseUrl, params input.Input, suffixList []string
 }
 
 // RunBoolBlind BoolBlind注入
-func RunBoolBlind(target string, params input.Input, suffixList []string) bool {
+func RunBoolBlind(fixUrl parse.BaseUrl, params input.Input, suffixList []string) bool {
 	log.Info("start bool blind injection...")
-	success, suffix := line.GetBoolBlindSuffix(target, suffixList)
+	success, suffix := line.GetBoolBlindSuffix(fixUrl, params.Param, suffixList)
 	if !success {
 		return false
 	}
-	line.GetVersionByBoolBlind(target, suffix)
-	line.GetCurrentDatabaseByBoolBlind(target, suffix)
-	line.GetAllDatabasesByBoolBlind(target, suffix)
+	line.GetVersionByBoolBlind(fixUrl, params.Param, suffix)
+	line.GetCurrentDatabaseByBoolBlind(fixUrl, params.Param, suffix)
+	line.GetAllDatabasesByBoolBlind(fixUrl, params.Param, suffix)
 	if params.Database != "" {
-		line.GetAllTablesByBoolBlind(target, suffix, params.Database)
+		line.GetAllTablesByBoolBlind(fixUrl, params.Param, suffix, params.Database)
 	}
 	if params.Database != "" && params.Table != "" {
-		line.GetAllColumnsByBoolBlind(target, suffix, params.Database, params.Table)
+		line.GetAllColumnsByBoolBlind(fixUrl, params.Param, suffix, params.Database, params.Table)
 	}
 	if params.Database != "" && params.Table != "" && len(params.Columns) > 0 {
-		line.GetAllDataByBoolBlind(target, suffix, params.Database, params.Table, params.Columns)
+		line.GetAllDataByBoolBlind(fixUrl, params.Param, suffix, params.Database, params.Table, params.Columns)
 	}
 	return true
 }

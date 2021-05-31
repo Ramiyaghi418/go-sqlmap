@@ -73,6 +73,7 @@ func main() {
 		Table:     "users",
 		Columns:   []string{"id", "username", "password"},
 		Technique: []string{"U"},
+		Param:     "id",
 	}
 	instance := sqlmap.NewScanner(opts)
 	instance.Run()
