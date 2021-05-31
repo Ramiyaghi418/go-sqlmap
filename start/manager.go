@@ -12,7 +12,7 @@ import (
 // NewSimpleStarter 启动简单方式的函数
 func NewSimpleStarter(target string, params input.Input) {
 	fixUrl := parse.NewUrl(target)
-	checkParams(params, fixUrl)
+	checkParams(&params, fixUrl)
 	success := line.DetectSqlInject(fixUrl, params.Param)
 	if !success {
 		return
@@ -23,7 +23,7 @@ func NewSimpleStarter(target string, params input.Input) {
 	}
 	for _, v := range params.Technique {
 		if v == constant.UnionSelectTech {
-			if RunUnionSelect(target, params, suffixList) {
+			if RunUnionSelect(fixUrl, params, suffixList) {
 				return
 			}
 			log.Info("finish union select injection")
@@ -61,7 +61,7 @@ func NewStarter(request parse.BaseRequest, params input.Input) {
 }
 
 // 检查P参数是否合法
-func checkParams(param input.Input, fixUrl parse.BaseUrl) {
+func checkParams(param *input.Input, fixUrl parse.BaseUrl) {
 	for k, _ := range fixUrl.Params {
 		if param.Param == k {
 			return

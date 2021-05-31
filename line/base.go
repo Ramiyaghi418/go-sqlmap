@@ -61,6 +61,7 @@ func GetSuffixList(fixUrl parse.BaseUrl, key string) (bool, []string) {
 			suffixList = append(suffixList, v)
 		}
 	}
+	fixUrl.SetParam(key, temp)
 	if len(suffixList) > 0 {
 		return true, suffixList
 	}
