@@ -37,37 +37,37 @@ func RunUnionSelect(fixUrl parse.BaseUrl, params input.Input, suffixList []strin
 }
 
 // RunErrorBased ErrorBased注入
-func RunErrorBased(target string, params input.Input, suffixList []string) bool {
+func RunErrorBased(fixUrl parse.BaseUrl, params input.Input, suffixList []string) bool {
 	log.Info("start error based injection...")
-	success, suffix := line.DetectErrorBased(target, suffixList)
+	success, suffix := line.DetectErrorBased(fixUrl, params.Param, suffixList)
 	if !success {
 		return false
 	}
 	if params.Beta == true {
-		line.GetVersionByErrorBasedPolygon(target, suffix)
-		line.GetCurrentDatabaseByErrorBasedPolygon(target, suffix)
-		line.GetAllDatabasesByErrorBasedPolygon(target, suffix)
+		line.GetVersionByErrorBasedPolygon(fixUrl, params.Param, suffix)
+		line.GetCurrentDatabaseByErrorBasedPolygon(fixUrl, params.Param, suffix)
+		line.GetAllDatabasesByErrorBasedPolygon(fixUrl, params.Param, suffix)
 		if params.Database != "" {
-			line.GetAllTablesByErrorBasedPolygon(target, suffix, params.Database)
+			line.GetAllTablesByErrorBasedPolygon(fixUrl, params.Param, suffix, params.Database)
 		}
 		if params.Database != "" && params.Table != "" {
-			line.GetAllColumnsByErrorBasedPolygon(target, suffix, params.Database, params.Table)
+			line.GetAllColumnsByErrorBasedPolygon(fixUrl, params.Param, suffix, params.Database, params.Table)
 		}
 		if params.Database != "" && params.Table != "" && len(params.Columns) > 0 {
-			line.GetAllDataByErrorBasedPolygon(target, suffix, params.Database, params.Table, params.Columns)
+			line.GetAllDataByErrorBasedPolygon(fixUrl, params.Param, suffix, params.Database, params.Table, params.Columns)
 		}
 	} else {
-		line.GetVersionByErrorBased(target, suffix)
-		line.GetCurrentDatabaseByErrorBased(target, suffix)
-		line.GetAllDatabasesByErrorBased(target, suffix)
+		line.GetVersionByErrorBased(fixUrl, params.Param, suffix)
+		line.GetCurrentDatabaseByErrorBased(fixUrl, params.Param, suffix)
+		line.GetAllDatabasesByErrorBased(fixUrl, params.Param, suffix)
 		if params.Database != "" {
-			line.GetAllTablesByErrorBased(target, suffix, params.Database)
+			line.GetAllTablesByErrorBased(fixUrl, params.Param, suffix, params.Database)
 		}
 		if params.Database != "" && params.Table != "" {
-			line.GetAllColumnsByErrorBased(target, suffix, params.Database, params.Table)
+			line.GetAllColumnsByErrorBased(fixUrl, params.Param, suffix, params.Database, params.Table)
 		}
 		if params.Database != "" && params.Table != "" && len(params.Columns) > 0 {
-			line.GetAllDataByErrorBased(target, suffix, params.Database, params.Table, params.Columns)
+			line.GetAllDataByErrorBased(fixUrl, params.Param, suffix, params.Database, params.Table, params.Columns)
 		}
 	}
 	return true

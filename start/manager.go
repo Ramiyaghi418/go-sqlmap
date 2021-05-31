@@ -29,7 +29,7 @@ func NewSimpleStarter(target string, params input.Input) {
 			log.Info("finish union select injection")
 		}
 		if v == constant.ErrorBasedTech {
-			if RunErrorBased(target, params, suffixList) {
+			if RunErrorBased(fixUrl, params, suffixList) {
 				return
 			}
 			log.Info("finish error based injection")
@@ -62,12 +62,12 @@ func NewStarter(request parse.BaseRequest, params input.Input) {
 
 // 检查P参数是否合法
 func checkParams(param *input.Input, fixUrl parse.BaseUrl) {
-	for k, _ := range fixUrl.Params {
+	for k := range fixUrl.Params {
 		if param.Param == k {
 			return
 		}
 	}
-	for k, _ := range fixUrl.Params {
+	for k := range fixUrl.Params {
 		param.Param = k
 	}
 }
