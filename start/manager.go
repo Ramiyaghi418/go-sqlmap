@@ -10,16 +10,21 @@ import (
 
 // NewStarter 启动简单方式的函数
 func NewStarter(target string, params input.Input) {
+	// 处理URL得到结构体
 	fixUrl := parse.NewUrl(target)
+	// 检测输入的-p参数是否是url的参数
 	checkParams(&params, fixUrl)
+	// 检测是否存在SQL注入
 	success := core.DetectSqlInject(fixUrl, params.Param)
 	if !success {
 		return
 	}
+	// 尝试得到可能的闭合列表
 	success, suffixList := core.GetSuffixList(fixUrl, params.Param)
 	if !success {
 		return
 	}
+	// 根据输入选择不同的技术进行注入
 	for _, v := range params.Technique {
 		if v == constant.UnionSelectTech {
 			if RunUnionSelect(fixUrl, params, suffixList) {

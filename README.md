@@ -2,10 +2,11 @@
 
 ## 介绍
 
-- sqlmap：渗透测试界的神器，这是一个简单的sqlmap
+- sqlmap：渗透测试界的神器，这是一个简单的sqlmap（可以把它当成玩具）
 - 使用Golang重写的原因：高效、生成可执行文件直接运行、无需搭建环境等
-- 测试通过sqli-lab前八关，传入一个有注入的url即可直接脱库
-- 目前可以做到UnionSelect回显注入、Updatexml和Polygon的报错注入、布尔盲注
+- 测试通过sqli-lab（https://github.com/Audi-1/sqli-labs）部分关卡
+- 目前仅支持GET请求和MySQL数据库，支持Union注入、报错注入和布尔盲注
+- 检测是否存在SQL注入的部分不准确，希望有大佬可以帮忙改进
 
 ## Introduce
 
@@ -62,11 +63,11 @@ package main
 
 import (
 	sqlmap "github.com/EmYiQing/go-sqlmap/api"
-	"github.com/EmYiQing/go-sqlmap/start"
+	"github.com/EmYiQing/go-sqlmap/input"
 )
 
 func main() {
-	opts := start.Input{
+	opts := input.Input{
 		Beta:      false,
 		Url:       "http://192.168.222.129:81/Less-1/?id=1",
 		Database:  "security",
@@ -77,7 +78,6 @@ func main() {
 	}
 	instance := sqlmap.NewScanner(opts)
 	instance.Run()
-	instance.Stop()
 }
 ```
 

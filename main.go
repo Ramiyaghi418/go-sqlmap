@@ -17,6 +17,7 @@ func main() {
 	params := input.ParseInput()
 	if params.Url != "" {
 		target := doPre(params.Url)
+		// 启动
 		start.NewStarter(target, params)
 		wait()
 	}
@@ -24,11 +25,15 @@ func main() {
 
 // 预处理
 func doPre(url string) string {
+	// 得到一个标准的URL
 	target := util.CheckUrl(url)
 	log.Info("target is " + target)
+	// 检测是否能访问
 	if !start.DetectAlive(target) {
 		os.Exit(-1)
 	}
+	// 检测是否存在WAF
+	// 参考安全狗可以做更多的WAF识别
 	if start.DetectSafeDogWaf(target) {
 		os.Exit(-1)
 	}
