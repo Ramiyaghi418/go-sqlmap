@@ -55,10 +55,19 @@ go-sqlmap.exe -u http://sqlilab-ip/Less-1/?id=1 -D security -T users -C id,usern
 
 ## API
 
+- import
+
 ```shell
-go get https://github.com/EmYiQing/go-sqlmap
+go get github.com/EmYiQing/go-sqlmap
 ```
 
+or
+
+```
+go get github.com/EmYiQing/go-sqlmap@v0.1.0
+```
+
+- code
 ```go
 package main
 
