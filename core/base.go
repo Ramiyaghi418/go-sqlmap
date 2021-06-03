@@ -4,7 +4,6 @@ import (
 	"github.com/EmYiQing/go-sqlmap/constant"
 	"github.com/EmYiQing/go-sqlmap/log"
 	"github.com/EmYiQing/go-sqlmap/parse"
-	"os"
 	"strings"
 )
 
@@ -15,6 +14,7 @@ func DetectSqlInject(fixUrl parse.BaseUrl, paramKey string) bool {
 		fixUrl.SetParam(paramKey, temp+v)
 		response := fixUrl.SendRequestByBaseUrl()
 		if response.Code != -1 {
+			// 关键字判断回显型注入
 			if strings.Contains(strings.ToLower(string(response.Body)),
 				strings.ToLower(constant.DetectedKeyword)) {
 				log.Info("detected sql injection!")
@@ -22,20 +22,21 @@ func DetectSqlInject(fixUrl parse.BaseUrl, paramKey string) bool {
 				return true
 			}
 		}
+		// Bool盲注检测
 		fixUrl.SetParam(paramKey, temp+v+constant.BlindDetectTruePayload)
 		trueResp := fixUrl.SendRequestByBaseUrl()
 		fixUrl.SetParam(paramKey, temp+v+constant.BlindDetectFalsePayload)
 		falseResp := fixUrl.SendRequestByBaseUrl()
-		if len(trueResp.Body) != len(falseResp.Body) {
+		if len(trueResp.Body) == len(falseResp.Body) {
 			continue
 		}
 		if string(trueResp.Body) != string(falseResp.Body) {
+			fixUrl.Params[paramKey] = temp
 			return true
 		}
-		fixUrl.Params[paramKey] = temp
 	}
 	log.Info("not detected sql injection!")
-	os.Exit(-1)
+	fixUrl.Params[paramKey] = temp
 	return false
 }
 
@@ -46,12 +47,15 @@ func GetSuffixList(fixUrl parse.BaseUrl, key string) (bool, []string) {
 	temp := fixUrl.Params[key]
 	var suffixList []string
 	for _, v := range constant.SuffixList {
+		// 尝试闭合后直接注释
 		fixUrl.SetParam(key, temp+v+constant.SuffixCondition)
 		conditionResp := fixUrl.SendRequestByBaseUrl()
 		conditionBody := conditionResp.Body
+		// 与True条件应正常返回
 		fixUrl.SetParam(key, temp+v+constant.SuffixTruePayload)
 		trueResp := fixUrl.SendRequestByBaseUrl()
 		trueBody := trueResp.Body
+		// 与False条件应返回有误
 		fixUrl.SetParam(key, temp+v+constant.SuffixFalsePayload)
 		falseResp := fixUrl.SendRequestByBaseUrl()
 		falseBody := falseResp.Body

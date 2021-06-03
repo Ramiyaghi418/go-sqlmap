@@ -24,11 +24,3 @@ func CheckUrl(url string) string {
 	}
 	return result
 }
-
-// GetCleanUrl 获得需要的URL格式
-func GetCleanUrl(url string) string {
-	path := strings.Split(url, "?")[0]
-	param := strings.Split(url, "?")[1]
-	key := strings.Split(param, "=")[0]
-	return path + "?" + key + "="
-}

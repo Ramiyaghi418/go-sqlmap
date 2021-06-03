@@ -22,7 +22,7 @@ func GetOrderByNum(fixUrl parse.BaseUrl, key string, suffixList []string) (strin
 				fixUrl.SetParam(key, temp)
 				return "", 0
 			}
-			fixUrl.SetParam(key, suffix+constant.Space+constant.UnionSelectOrderPayload+
+			fixUrl.SetParam(key, temp+suffix+constant.Space+constant.UnionSelectOrderPayload+
 				constant.Space+strconv.Itoa(i)+constant.Space+constant.Annotator)
 			resp := fixUrl.SendRequestByBaseUrl()
 			if resp.Code != -1 {
