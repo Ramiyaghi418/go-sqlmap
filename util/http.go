@@ -2,8 +2,8 @@ package util
 
 import (
 	"bytes"
+	"encoding/json"
 	"github.com/EmYiQing/go-sqlmap/log"
-	jsoniter "github.com/json-iterator/go"
 	"io/ioutil"
 	"net/http"
 	"strings"
@@ -80,7 +80,6 @@ func resolveForm(data map[string]string) []byte {
 
 // 解决json方式的提交
 func resolveJson(data map[string]string) []byte {
-	var json = jsoniter.ConfigCompatibleWithStandardLibrary
 	bytesData, _ := json.Marshal(data)
 	return bytesData
 }
