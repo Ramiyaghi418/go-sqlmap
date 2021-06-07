@@ -5,7 +5,7 @@
 - 请把这个项目当成学习SQL注入的小玩具，它并没有太多的实际价值
 - sqlmap：渗透测试界的神器，这是一个简单的sqlmap
 - 使用Golang重写的原因：高效、生成可执行文件直接运行、无需搭建环境等
-- 测试通过sqli-lab（https://github.com/Audi-1/sqli-labs）部分关卡
+- 测试通过[sqli-lab](https://github.com/Audi-1/sqli-labs)部分关卡
 - 目前仅支持GET请求和MySQL数据库，支持Union注入、报错注入和布尔盲注
 - 检测是否存在SQL注入的部分不准确，希望有大佬可以帮忙改进
 
